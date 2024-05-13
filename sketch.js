@@ -24,9 +24,10 @@ let dummy = true;
 let zLevel = 32;
 //Tracks the z-level the player is on/used to be on (until the new grid loads)
 let oldZ = 32;
+//Tracks the state of the crafting menu.
+let craftingState = "None";
 
-
-const RESET_TIME_PASSED = structuredClone(timePassed)
+// const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
 
@@ -159,6 +160,8 @@ function draw() {
   changeLayer(zLevel);
   //Spawns trees
   spawnTree();
+  //you'll never guess
+  displayCraftingMenu();
 }
 
 
@@ -331,6 +334,10 @@ function mousePressed(){
             //Second slot is logs/planks.
             blockSelected = PLANK;
           }
+          else if (slot === 2){
+            //Third slot is wooden pickaxe.
+            craftingState = "Wooden Pickaxe";
+          }
         }
       }
     }
@@ -459,15 +466,18 @@ function movePlayer(x, y) {
  
  }
 
- //Displays the inventory. First is stone, second is planks.
+ //Displays the inventory.
  function displayInventory() {
   stroke(30)
   fill("white");
-  rect(width-width/4, 0, 100, 10);
-  rect(width-width/4, 10, 100, 10);
+  for (let i = 0; i<width/6; i+= 10){
+    rect(width-width/4, i, 100, 10);
+  }
+ 
   fill("black");
-  text("Stone: "+inventory.stoneCollected, width-width/4, 10);
-  text("Planks: "+inventory.logsCollected, width-width/4, 20);
+  text("Stone: "+inventory.stoneCollected, width-width/4+2, 10);
+  text("Planks: "+inventory.logsCollected, width-width/4+2, 20);
+  text("Wooden Pick: "+inventory.woodenPickaxeCollected, width-width/4+2, 30);
 
 
  }
@@ -492,6 +502,24 @@ function movePlayer(x, y) {
     if (treeLocation === OPEN_TILE) {
       grid[treeLocationY][treeLocationX] = TREE;
       timePassed.trees = millis();
+    }
+  }
+ }
+
+ function displayCraftingMenu(){
+  if (craftingState != "None"){
+    stroke(30);
+    fill("white");
+    rect(width-width/4-110, 10, 100, 100);
+  }
+  if (craftingState === "Wooden Pickaxe"){
+    fill("black");
+    text("Recipe:", width-width/4-108, 22);
+    text("- 5 Wood Planks", width-width/4-108, 42);
+    if (inventory.woodenPickaxeCollected >= 5){
+      fill("white")
+      rect(width-width/4-100, 50, 50, 30);
+      // text("CRAFT")
     }
   }
  }
