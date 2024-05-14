@@ -8,6 +8,7 @@
 
 
 
+
 //the grid currently displayed
 let grid;
 
@@ -145,6 +146,7 @@ let inventory = {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  textFont("Garamond")
   //When started, generates a grid the size of the windowWidth and with GRID_SIZE tiles across.
   grid = generateRandomGrid(GRID_SIZE, GRID_SIZE);
   cellSize = height/grid.length;
@@ -276,7 +278,7 @@ function mousePressed(){
           mouseY < y*cellSize + cellSize
           ) {
             //If it is, then...
-            if (grid[y][x] === 1){
+            if (grid[y][x] === 1 && inventory.woodenPickaxeCollected>0){
               grid[y].splice(x, 1, 0);
               inventory.stoneCollected++;
             } //If the tile is stone, add one stone to inventory and replace with empty tile.
@@ -341,6 +343,7 @@ function mousePressed(){
         }
       }
     }
+  craftSomething();
  }
 
 
@@ -516,10 +519,43 @@ function movePlayer(x, y) {
     fill("black");
     text("Recipe:", width-width/4-108, 22);
     text("- 5 Wood Planks", width-width/4-108, 42);
-    if (inventory.woodenPickaxeCollected >= 5){
-      fill("white")
-      rect(width-width/4-100, 50, 50, 30);
-      // text("CRAFT")
+    if (inventory.logsCollected >= 5){
+      fill("#d3d3d3");
+      rect(width-width/4-100, 70, 80, 30);
+      fill("brown");
+      textSize(20);
+      stroke(10);
+      text("CRAFT", width-width/4-92, 90)
+      textSize(12);
+      stroke(30);
+
+      if (mouseX >= width-width/4-100 && 
+        mouseX <= width-width/4-20 &&
+        mouseY >= 70 &&
+        mouseY <= 100
+      ){
+        fill("silver")
+        rect(width-width/4-100, 70, 80, 30);
+        fill("brown");
+        textSize(20);
+        stroke(10);
+        text("CRAFT", width-width/4-92, 90)
+        textSize(12);
+        stroke(30);
+    }
     }
   }
+ }
+
+ function craftSomething(){
+  if (mouseX >= width-width/4-100 && 
+  mouseX <= width-width/4-20 &&
+  mouseY >= 70 &&
+  mouseY <= 100 &&
+  inventory.logsCollected >= 5 &&
+  craftingState === "Wooden Pickaxe"
+){
+  inventory.woodenPickaxeCollected++;
+  inventory.logsCollected -= 5;
+}
  }
