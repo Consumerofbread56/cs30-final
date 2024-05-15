@@ -142,6 +142,7 @@ let inventory = {
 //   strength: 10,
 //   necrosingStrength: 2
 // }
+//
 
 
 function setup() {
