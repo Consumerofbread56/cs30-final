@@ -271,12 +271,14 @@ function mousePressed(){
   //Checks through every tile.
     for (let y = 0; y < grid.length; y++){
       for(let x = 0; x < grid[y].length; x++){
-        //Checks if mouse is on the tile the nested loop is currently on.
+        //Checks if mouse is on the tile the nested loop is currently on, and if the distance from the player to the tile is
+        //less than 3.5 tiles
         if (
           mouseX > x*cellSize &&
           mouseX < x*cellSize + cellSize &&
           mouseY > y*cellSize &&
-          mouseY < y*cellSize + cellSize
+          mouseY < y*cellSize + cellSize &&
+          dist(player.x*cellSize+cellSize/2, player.y*cellSize+cellSize/2, mouseX, mouseY) < cellSize*4
           ) {
             //If it is, then...
             if (grid[y][x] === 1 && inventory.woodenPickaxeCollected>0){
