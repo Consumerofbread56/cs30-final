@@ -169,6 +169,22 @@ function draw() {
 
 
 function displayGrid() {
+  let bottomLeftCorner = {
+    x: 0,
+    y: 0
+  }
+  let topLeftCorner = {
+    x: 0,
+    y: 0
+  }
+  let bottomRightCorner = {
+    x: 0,
+    y: 0
+  }
+  let topRightCorner = {
+    x: 0,
+    y: 0
+  }
   //iterates through every tile.
   for (let y = 0; y<grid.length; y++){
     for (let x = 0; x<grid[2].length; x++){
@@ -205,9 +221,47 @@ function displayGrid() {
         }
       }
        //Makes tiles tile-shaped.
-      square(x*cellSize,y*cellSize, cellSize);
+
+       square(x*cellSize,y*cellSize, cellSize);
+
+       //creates outline on block if the mouse goes over it.
+      
+       if (mouseX > x*cellSize &&
+          mouseX < x*cellSize + cellSize &&
+          mouseY > y*cellSize &&
+          mouseY < y*cellSize + cellSize) {
+          
+            
+              topLeftCorner.x x*cellSize
+              y: y*cellSize
+            
+
+           
+              x: x*cellSize + cellSize
+              y: y*cellSize
+            
+
+            
+              x: x*cellSize,
+              y: y*cellSize + cellSize
+            
+
+            
+              x: x*cellSize + cellSize,
+              y: y*cellSize + cellSize
+            
+            
+          }
+      
+      
     }
   }
+  stroke("white");
+  line(topLeftCorner.x, topLeftCorner.y, topRightCorner.x, topRightCorner.y);
+  line(topLeftCorner.x, topLeftCorner.y, bottomRightCorner.x, bottomRightCorner.y);
+  line(bottomRightCorner.x, bottomRightCorner.y, bottomLeftCorner.x, bottomLeftCorner.y);
+  line(bottomRightCorner.x, bottomRightCorner.y, topRightCorner.x, topRightCorner.y);
+  stroke("black");
 }
 
 //Generates a new grid upon entrance into floor cave or spawn in.
