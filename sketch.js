@@ -144,6 +144,9 @@ let inventory = {
 // }
 //
 
+function preload(){
+  let grassImg = loadImage("assets/images/grass_texture.png")
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -169,6 +172,7 @@ function draw() {
 
 
 function displayGrid() {
+
   let bottomLeftCorner = {
     x: 0,
     y: 0
@@ -185,6 +189,7 @@ function displayGrid() {
     x: 0,
     y: 0
   }
+
   //iterates through every tile.
   for (let y = 0; y<grid.length; y++){
     for (let x = 0; x<grid[2].length; x++){
@@ -232,23 +237,23 @@ function displayGrid() {
           mouseY < y*cellSize + cellSize) {
           
             
-              topLeftCorner.x x*cellSize
-              y: y*cellSize
+              topLeftCorner.x = x*cellSize;
+              topLeftCorner.y = y*cellSize;
             
 
            
-              x: x*cellSize + cellSize
-              y: y*cellSize
+              topRightCorner.x = x*cellSize + cellSize;
+              topRightCorner.y = y*cellSize;
             
 
             
-              x: x*cellSize,
-              y: y*cellSize + cellSize
+              bottomLeftCorner.x = x*cellSize;
+              bottomLeftCorner.y = y*cellSize + cellSize;
             
 
             
-              x: x*cellSize + cellSize,
-              y: y*cellSize + cellSize
+              bottomRightCorner.x = x*cellSize + cellSize;
+              bottomRightCorner.y = y*cellSize + cellSize;
             
             
           }
@@ -258,7 +263,7 @@ function displayGrid() {
   }
   stroke("white");
   line(topLeftCorner.x, topLeftCorner.y, topRightCorner.x, topRightCorner.y);
-  line(topLeftCorner.x, topLeftCorner.y, bottomRightCorner.x, bottomRightCorner.y);
+  line(topLeftCorner.x, topLeftCorner.y, bottomLeftCorner.x, bottomLeftCorner.y);
   line(bottomRightCorner.x, bottomRightCorner.y, bottomLeftCorner.x, bottomLeftCorner.y);
   line(bottomRightCorner.x, bottomRightCorner.y, topRightCorner.x, topRightCorner.y);
   stroke("black");
@@ -296,7 +301,7 @@ function generateRandomGrid(rows, cols){
           //If on surface, have a one in 75 chance of generating a tree.
           emptyArray[y].push(TREE);
         }
-        else if (oldZ < 20 && floor(random(100)) < 10+(20-oldZ)) {
+        else if (oldZ < 20 && random(100) < 10+(20-oldZ)) {
           //If below Z: 20, generate lava. Amount of lava generated depends on how deep you go.
           emptyArray[y].push(LAVA);
         }
