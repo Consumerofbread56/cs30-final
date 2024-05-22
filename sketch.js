@@ -144,8 +144,10 @@ let inventory = {
 // }
 //
 
+let grassImg;
+
 function preload(){
-  let grassImg = loadImage("assets/images/grass_texture.png")
+  grassImg = loadImage("grass_texture.png")
 }
 
 function setup() {
@@ -191,9 +193,11 @@ function displayGrid() {
   }
 
   //iterates through every tile.
+  let imageOrColour = "colour";
   for (let y = 0; y<grid.length; y++){
     for (let x = 0; x<grid[2].length; x++){
       //Checks tile ID for each and colours them accordingly.
+      
       
       if (grid[y][x] === 1){
         fill("black");
@@ -219,15 +223,18 @@ function displayGrid() {
       else {
         //Open spaces are green on zLevel 32 and white on any zLevel below.
         if (oldZ === 32){
-          fill("green");
+          imageOrColour = "image";
+          image(grassImg, x * cellSize, y * cellSize, cellSize);
         }
         else{
           fill("white");
         }
       }
        //Makes tiles tile-shaped.
-
-       square(x*cellSize,y*cellSize, cellSize);
+        if (imageOrColour === "colour"){
+          square(x*cellSize,y*cellSize, cellSize);
+        }
+       imageOrColour = "colour";
 
        //creates outline on block if the mouse goes over it.
       
