@@ -145,9 +145,11 @@ let inventory = {
 //
 
 let grassImg;
+let treeImg;
 
 function preload(){
-  grassImg = loadImage("grass_texture.png")
+  grassImg = loadImage("grass.png")
+  treeImg = loadImage("Tree (1).png")
 }
 
 function setup() {
@@ -212,7 +214,8 @@ function displayGrid() {
         fill("silver");
       } //Cieling Cave ^^
       else if (grid[y][x] === TREE){
-        fill("lime");
+        imageOrColour = "image";
+        image(treeImg, x * cellSize, y * cellSize, cellSize);
       }
       else if (grid[y][x] === LAVA){
         fill("maroon");
