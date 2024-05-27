@@ -28,6 +28,8 @@ let oldZ = 32;
 //Tracks the state of the crafting menu.
 let craftingState = "None";
 
+let menuState = "closed";
+
 // const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
@@ -149,7 +151,7 @@ let treeImg;
 
 function preload(){
   grassImg = loadImage("grass.png")
-  treeImg = loadImage("Tree (1).png")
+  treeImg = loadImage("Tree2 (1).png")
 }
 
 function setup() {
@@ -215,7 +217,7 @@ function displayGrid() {
       } //Cieling Cave ^^
       else if (grid[y][x] === TREE){
         imageOrColour = "image";
-        image(treeImg, x * cellSize, y * cellSize, cellSize);
+        image(treeImg, x * cellSize, y * cellSize, cellSize, cellSize);
       }
       else if (grid[y][x] === LAVA){
         fill("maroon");
@@ -227,7 +229,7 @@ function displayGrid() {
         //Open spaces are green on zLevel 32 and white on any zLevel below.
         if (oldZ === 32){
           imageOrColour = "image";
-          image(grassImg, x * cellSize, y * cellSize, cellSize);
+          image(grassImg, x * cellSize, y * cellSize, cellSize, cellSize);
         }
         else{
           fill("white");
@@ -365,7 +367,7 @@ function mousePressed(){
             } //If the tile is a cieling hole, do nothing.
             else if (grid[y][x] === TREE){
               grid[y].splice(x, 1, 0);
-              inventory.logsCollected = inventory.logsCollected + 5;
+              inventory.logsCollected++;
             }  //If the tile is a tree, add 5 logs/planks to inventory and replace with empty tile.
             else if (grid[y][x] === PLANK){
               grid[y][x] = 0;
@@ -392,29 +394,37 @@ function mousePressed(){
       }
     }
     //If the mouse is in the x-spot where the inventory is...
-    if (mouseX>width-width/4 && mouseX<width-width/4+100){
-      //checks the y position.
-      for (let y = 0; y<height; y++){
-        //And if the mouseY is equal to the place iterated through with the loop...
-        if(mouseY === y){
-          //then choose the inventory slot you want to choose from. Remember that the inventory slot number does not correspond to
-          //the block ID. Might rewrite it to fit for future convenience.
-          let slot = Math.floor(y/10);
-          if (slot === 0){
-            //First slot is stone.
-            blockSelected = STONE;
-          }
-          else if (slot === 1){
-            //Second slot is logs/planks.
-            blockSelected = PLANK;
-          }
-          else if (slot === 2){
-            //Third slot is wooden pickaxe.
-            craftingState = "Wooden Pickaxe";
+    if(menuState = "open"){
+      if (mouseX>width-width/4 && mouseX<width-width/4+100){
+        //checks the y position.
+        for (let y = 0; y<height; y++){
+          //And if the mouseY is equal to the place iterated through with the loop...
+          if(mouseY === y){
+            //then choose the inventory slot you want to choose from. Remember that the inventory slot number does not correspond to
+            //the block ID. Might rewrite it to fit for future convenience.
+            let slot = Math.floor(y/10);
+            if (slot === 0){
+              //First slot is stone.
+              blockSelected = STONE;
+            }
+            else if (slot === 1){
+              //Second slot is logs/planks.
+              blockSelected = PLANK;
+            }
+            else if (slot === 2){
+              //Third slot is wooden pickaxe.
+              craftingState = "Wooden Pickaxe";
+            }
           }
         }
       }
+      else {
+        if (mouseX>width-width/4 && mouseX<width-width/4+100 &&){
+
+        }
+      }
     }
+    
   craftSomething();
  }
 
@@ -543,16 +553,26 @@ function movePlayer(x, y) {
 
  //Displays the inventory.
  function displayInventory() {
-  stroke(30)
-  fill("white");
-  for (let i = 0; i<width/6; i+= 10){
-    rect(width-width/4, i, 100, 10);
+  if(menuState === "open"){
+    stroke(30);
+    fill("white");
+    for (let i = 0; i<width/6; i+= 10){
+      rect(width-width/4, i, 100, 10);
+    }
+   
+    fill("black");
+    text("Stone: "+inventory.stoneCollected, width-width/4+2, 10);
+    text("Planks: "+inventory.logsCollected, width-width/4+2, 20);
+    text("Wooden Pick: "+inventory.woodenPickaxeCollected, width-width/4+2, 30);
+  }
+  else{
+    stroke(30);
+    fill("black");
+    rect(width-width/4, 0, 100, 10);
+    fill("white");
+    text("INVENTORY", width-width/4+12, 10);
   }
  
-  fill("black");
-  text("Stone: "+inventory.stoneCollected, width-width/4+2, 10);
-  text("Planks: "+inventory.logsCollected, width-width/4+2, 20);
-  text("Wooden Pick: "+inventory.woodenPickaxeCollected, width-width/4+2, 30);
 
 
  }
@@ -561,7 +581,7 @@ function movePlayer(x, y) {
   //counts how many trees are on the grid
   let counter = 0;
   for (let y = 0; y<grid.length; y++){
-    for (let x = 0; x<grid[2].length; x++){
+    for (let x = 0; x<grid[y].length; x++){
       if (grid[y][x] === TREE){
         counter++;
       }
@@ -582,6 +602,7 @@ function movePlayer(x, y) {
  }
 
  function displayCraftingMenu(){
+  if (menuState === "open")
   if (craftingState != "None"){
     stroke(30);
     fill("white");
