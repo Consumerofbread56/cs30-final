@@ -148,10 +148,12 @@ let inventory = {
 
 let grassImg;
 let treeImg;
+let plankImg
 
 function preload(){
   grassImg = loadImage("grass.png")
   treeImg = loadImage("Tree2 (1).png")
+  plankImg = loadImage("plank.jpg")
 }
 
 function setup() {
@@ -223,7 +225,8 @@ function displayGrid() {
         fill("maroon");
       }
       else if (grid[y][x] === PLANK){
-        fill("brown");
+        imageOrColour = "image"
+        image(plankImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Wooden Planks ^^
       else {
         //Open spaces are green on zLevel 32 and white on any zLevel below.
@@ -394,7 +397,7 @@ function mousePressed(){
       }
     }
     //If the mouse is in the x-spot where the inventory is...
-    if(menuState = "open"){
+    if(menuState === "open"){
       if (mouseX>width-width/4 && mouseX<width-width/4+100){
         //checks the y position.
         for (let y = 0; y<height; y++){
@@ -418,15 +421,19 @@ function mousePressed(){
           }
         }
       }
-      else {
-        if (mouseX>width-width/4 && mouseX<width-width/4+100 &&){
-
-        }
+     
+        
       }
-    }
+      craftSomething();
+  if (mouseX>width-width/4 && mouseX<width-width/4+100 && mouseY<10 && menuState === "closed"){
+    menuState = "open";
+  }
     
-  craftSomething();
- }
+}
+    
+  
+
+ 
 
 
  function keyPressed(){
@@ -450,6 +457,7 @@ function mousePressed(){
   if (key === "a") {   //left
     movePlayer(player.x - 1, player.y + 0); //-1 on x axis, 0 on y axis
   }
+  
 }
 
 
@@ -564,6 +572,11 @@ function movePlayer(x, y) {
     text("Stone: "+inventory.stoneCollected, width-width/4+2, 10);
     text("Planks: "+inventory.logsCollected, width-width/4+2, 20);
     text("Wooden Pick: "+inventory.woodenPickaxeCollected, width-width/4+2, 30);
+    rect(width-width/4, height/3, 100, 10);
+    fill("white")
+    text("CLOSE", width-width/4+30, height/3+10);
+    fill("black")
+    
   }
   else{
     stroke(30);
