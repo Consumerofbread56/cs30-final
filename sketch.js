@@ -418,6 +418,9 @@ function mousePressed(){
               //Third slot is wooden pickaxe.
               craftingState = "Wooden Pickaxe";
             }
+            else if (slot === 26){
+              menuState = "closed"
+            }
           }
         }
       }
@@ -615,7 +618,7 @@ function movePlayer(x, y) {
  }
 
  function displayCraftingMenu(){
-  if (menuState === "open")
+  if (menuState === "open"){
   if (craftingState != "None"){
     stroke(30);
     fill("white");
@@ -650,6 +653,7 @@ function movePlayer(x, y) {
         stroke(30);
     }
     }
+  }
   }
  }
 
