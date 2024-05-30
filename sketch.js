@@ -418,7 +418,7 @@ function mousePressed(){
               //Third slot is wooden pickaxe.
               craftingState = "Wooden Pickaxe";
             }
-            else if (slot === 26){
+            else if (slot > 17) {
               menuState = "closed"
             }
           }
