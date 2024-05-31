@@ -213,13 +213,13 @@ function displayGrid() {
         imageOrColour = "image";
         image(stoneImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Stone ^^
-      else if (grid[y][x] === 9){
+      else if (grid[y][x] === PLAYER){
         fill("red");
       } //Player ^^
-      else if (grid[y][x] === 2){
+      else if (grid[y][x] === FLOOR_HOLE_TILE){
         fill("gray");
       } //Floor Cave ^^
-      else if (grid[y][x] === 3){
+      else if (grid[y][x] === CIELING_HOLE_TILE){
         fill("silver");
       } //Cieling Cave ^^
       else if (grid[y][x] === TREE){
@@ -233,6 +233,15 @@ function displayGrid() {
         imageOrColour = "image"
         image(plankImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Wooden Planks ^^
+      else if (grid[x][y] === COAL){
+        fill("black");
+      }
+      else if (grid[x][y] === IRON){
+        fill("white");
+      }
+      else if (grid[x][y] === WORKSHOP){
+        fill("brown");
+      }
       else {
         //Open spaces are green on zLevel 32 and white on any zLevel below.
         if (oldZ === 32){
