@@ -148,12 +148,16 @@ let inventory = {
 
 let grassImg;
 let treeImg;
-let plankImg
+let plankImg;
+let gravelImg;
+let stoneImg;
 
 function preload(){
-  grassImg = loadImage("grass.png")
-  treeImg = loadImage("Tree2 (1).png")
-  plankImg = loadImage("plank.jpg")
+  grassImg = loadImage("grass.png");
+  treeImg = loadImage("Tree2 (1).png");
+  plankImg = loadImage("plank.jpg");
+  gravelImg = loadImage("gravel.png");
+  stoneImg = loadImage("stone.png");
 }
 
 function setup() {
@@ -206,7 +210,8 @@ function displayGrid() {
       
       
       if (grid[y][x] === 1){
-        fill("black");
+        imageOrColour = "image";
+        image(stoneImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Stone ^^
       else if (grid[y][x] === 9){
         fill("red");
@@ -235,7 +240,8 @@ function displayGrid() {
           image(grassImg, x * cellSize, y * cellSize, cellSize, cellSize);
         }
         else{
-          fill("white");
+          imageOrColour = "image";
+          image(gravelImg, x * cellSize, y * cellSize, cellSize, cellSize);
         }
       }
        //Makes tiles tile-shaped.
@@ -418,7 +424,7 @@ function mousePressed(){
               //Third slot is wooden pickaxe.
               craftingState = "Wooden Pickaxe";
             }
-            else if (slot > 17) {
+            else if (slot > 20) {
               menuState = "closed"
             }
           }
@@ -576,9 +582,9 @@ function movePlayer(x, y) {
     text("Planks: "+inventory.logsCollected, width-width/4+2, 20);
     text("Wooden Pick: "+inventory.woodenPickaxeCollected, width-width/4+2, 30);
     rect(width-width/4, height/3, 100, 10);
-    fill("white")
+    fill("white");
     text("CLOSE", width-width/4+30, height/3+10);
-    fill("black")
+    fill("black");
     
   }
   else{
@@ -634,7 +640,7 @@ function movePlayer(x, y) {
       fill("brown");
       textSize(20);
       stroke(10);
-      text("CRAFT", width-width/4-92, 90)
+      text("CRAFT", width-width/4-92, 90);
       textSize(12);
       stroke(30);
 
@@ -643,7 +649,7 @@ function movePlayer(x, y) {
         mouseY >= 70 &&
         mouseY <= 100
       ){
-        fill("silver")
+        fill("silver");
         rect(width-width/4-100, 70, 80, 30);
         fill("brown");
         textSize(20);
