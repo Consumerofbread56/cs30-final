@@ -391,6 +391,10 @@ function mousePressed(){
               grid[y][x] = 0;
               inventory.logsCollected++;
              } //If the tile is a log/plank, add 1 log/plank to inventory and replace with empty tile
+             else if (grid[y][x] === WORKSHOP){
+              grid[y][x] = 0;
+              inventory.workshopsCollected++;
+             } //If the tile is a log/plank, add 1 log/plank to inventory and replace with empty tile
             
             else if (grid[y][x] === 0){
               if (blockSelected != undefined){
@@ -402,6 +406,10 @@ function mousePressed(){
                   grid[y][x] = PLANK;
                   inventory.logsCollected--;
                 } //If the tile is empty and the block selected in the inventory is logs and you have it, replace with log, -1 log.
+                if(blockSelected === WORKSHOP && inventory.workshopsCollected>0){
+                  grid[y][x] = WORKSHOP;
+                  inventory.workshopsCollected--;
+                }
               }
               else {
                 dummy = -dummy;
@@ -433,8 +441,13 @@ function mousePressed(){
               //Third slot is wooden pickaxe.
               craftingState = "Wooden Pickaxe";
             }
+            else if (slot === 3) {
+              //Fourth slot is workshop.
+              craftingState = "Workshop";
+              blockSelected = WORKSHOP;
+            }
             else if (slot > 20) {
-              menuState = "closed"
+              menuState = "closed";
             }
           }
         }
@@ -582,13 +595,14 @@ function movePlayer(x, y) {
   if(menuState === "open"){
     stroke(30);
     fill("white");
-    for (let i = 0; i<width/6; i+= 10){
+    for (let i = 0; i<width/6; i+= 10) {
       rect(width-width/4, i, 100, 10);
     }
    
     fill("black");
     text("Stone: "+inventory.stoneCollected, width-width/4+2, 10);
     text("Planks: "+inventory.logsCollected, width-width/4+2, 20);
+    text("Work Stations: "+inventory.workshopsCollected, width-width/4+2, 40);
     text("Wooden Pick: "+inventory.woodenPickaxeCollected, width-width/4+2, 30);
     rect(width-width/4, height/3, 100, 10);
     fill("white");
@@ -669,8 +683,39 @@ function movePlayer(x, y) {
     }
     }
   }
+  else if (craftingState === "Workshop") {
+    fill("black");
+    text("Recipe:", width-width/4-108, 22);
+    text("- 5 Wood Planks \n- 5 Stone", width-width/4-108, 42);
+    if (inventory.logsCollected >= 5 && inventory.stoneCollected >= 5){
+      fill("#d3d3d3");
+      rect(width-width/4-100, 70, 80, 30);
+      fill("brown");
+      textSize(20);
+      stroke(10);
+      text("CRAFT", width-width/4-92, 90);
+      textSize(12);
+      stroke(30);
+
+      if (mouseX >= width-width/4-100 && 
+        mouseX <= width-width/4-20 &&
+        mouseY >= 70 &&
+        mouseY <= 100
+      ){
+        fill("silver");
+        rect(width-width/4-100, 70, 80, 30);
+        fill("brown");
+        textSize(20);
+        stroke(10);
+        text("CRAFT", width-width/4-92, 90)
+        textSize(12);
+        stroke(30);
+    }
+    }
   }
- }
+  }
+  }
+ 
 
  function craftSomething(){
   if (mouseX >= width-width/4-100 && 
@@ -682,5 +727,17 @@ function movePlayer(x, y) {
 ){
   inventory.woodenPickaxeCollected++;
   inventory.logsCollected -= 5;
+}
+if (mouseX >= width-width/4-100 && 
+  mouseX <= width-width/4-20 &&
+  mouseY >= 70 &&
+  mouseY <= 100 &&
+  inventory.logsCollected >= 5 && 
+  inventory.stoneCollected >= 5 &&
+  craftingState === "Workshop"
+){
+  inventory.workshopsCollected++;
+  inventory.logsCollected -= 5;
+  inventory.stoneCollected -= 5;
 }
  }
