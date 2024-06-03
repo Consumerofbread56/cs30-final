@@ -30,6 +30,9 @@ let craftingState = "None";
 
 let menuState = "closed";
 
+let workshopState = "closed";
+
+let workshopCraft = false;
 // const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
@@ -233,13 +236,13 @@ function displayGrid() {
         imageOrColour = "image"
         image(plankImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Wooden Planks ^^
-      else if (grid[x][y] === COAL){
+      else if (grid[y][x] === COAL){
         fill("black");
       }
-      else if (grid[x][y] === IRON){
+      else if (grid[y][x] === IRON){
         fill("white");
       }
-      else if (grid[x][y] === WORKSHOP){
+      else if (grid[y][x] === WORKSHOP){
         fill("brown");
       }
       else {
@@ -373,7 +376,7 @@ function mousePressed(){
             if (grid[y][x] === 1 && inventory.woodenPickaxeCollected>0){
               grid[y].splice(x, 1, 0);
               inventory.stoneCollected++;
-            } //If the tile is stone, add one stone to inventory and replace with empty tile.
+            } //If the tile is stone, add one stone to inventory and replace with empty tile ^^.
             else if (grid[y][x] === 9){
               dummy = -dummy;
             } ///If the tile is the player, do nothing.
@@ -386,15 +389,19 @@ function mousePressed(){
             else if (grid[y][x] === TREE){
               grid[y].splice(x, 1, 0);
               inventory.logsCollected++;
-            }  //If the tile is a tree, add 5 logs/planks to inventory and replace with empty tile.
+            }  //If the tile is a tree, add 1 logs/planks to inventory and replace with empty tile.
             else if (grid[y][x] === PLANK){
               grid[y][x] = 0;
               inventory.logsCollected++;
-             } //If the tile is a log/plank, add 1 log/plank to inventory and replace with empty tile
-             else if (grid[y][x] === WORKSHOP){
+             } //If the tile is a log/plank, add 1 log/plank to inventory and replace with empty tile.
+             else if (grid[y][x] === WORKSHOP && workshopState === "closed"){
               grid[y][x] = 0;
               inventory.workshopsCollected++;
-             } //If the tile is a log/plank, add 1 log/plank to inventory and replace with empty tile
+             } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile if the player
+             //doesn't intend to craft.
+             else if (grid[y][x] === WORKSHOP && workshopState === "open"){
+              workshopCrafting();
+             }
             
             else if (grid[y][x] === 0){
               if (blockSelected != undefined){
@@ -489,6 +496,14 @@ function mousePressed(){
     movePlayer(player.x - 1, player.y + 0); //-1 on x axis, 0 on y axis
   }
   
+  if (key === "c") { //toggles workshop crafting
+    if (workshopState === "closed") {
+      workshopState = "open";
+  }
+  else if(workshopState === "open") {
+    workshopState = "closed";
+  }
+  }
 }
 
 
@@ -717,7 +732,7 @@ function movePlayer(x, y) {
   }
  
 
- function craftSomething(){
+ function craftSomething() {
   if (mouseX >= width-width/4-100 && 
   mouseX <= width-width/4-20 &&
   mouseY >= 70 &&
@@ -740,4 +755,13 @@ if (mouseX >= width-width/4-100 &&
   inventory.logsCollected -= 5;
   inventory.stoneCollected -= 5;
 }
- }
+}
+
+function workshopCrafting() {
+  if (dist(player.x*cellSize+cellSize/2, player.y*cellSize+cellSize/2, mouseX, mouseY) < cellSize*4) {
+    workshopCraft = true;
+  }
+  else if (dist(player.x*cellSize+cellSize/2, player.y*cellSize+cellSize/2, mouseX, mouseY) > cellSize*4) {
+    workshopCraft = false;
+  }
+}
