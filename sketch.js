@@ -83,8 +83,8 @@ const DOOR = 15;
 const LAVA = 16;
 
 // const SPIKES = 17;
-const TREE_SR = 40000;
-const MAX_TREES = 10;
+const TREE_SR = 20000;
+const MAX_TREES = 20;
 
 let player = {
   x: 0,
@@ -179,10 +179,12 @@ function draw() {
   displayInventory();
   //checks if the player changes z-level.
   changeLayer(zLevel);
-  //Spawns trees
+  //Spawns trees.
   spawnTree();
   //you'll never guess
   displayCraftingMenu();
+  //Checks if the player is in the vicinity of a workshop.
+  workshopCrafting();
 }
 
 
@@ -399,9 +401,8 @@ function mousePressed(){
               inventory.workshopsCollected++;
              } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile if the player
              //doesn't intend to craft.
-             else if (grid[y][x] === WORKSHOP && workshopState === "open"){
-              workshopCrafting();
-             }
+        
+             
             
             else if (grid[y][x] === 0){
               if (blockSelected != undefined){
@@ -467,8 +468,7 @@ function mousePressed(){
     menuState = "open";
   }
     
-}
-    
+}   
   
 
  
