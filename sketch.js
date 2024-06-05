@@ -33,6 +33,7 @@ let menuState = "closed";
 let workshopState = "closed";
 
 let workshopCraft = false;
+let workshopCraft2 = false;
 // const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
@@ -56,6 +57,7 @@ let oldCielingHoleLocationY = [];
 let newCielingHoleLocationX = [];
 let newCielingHoleLocationY = [];
 let oldGrid = [];
+let workshops = [];
 
 //How many tiles across the grid is
 const GRID_SIZE = 30;
@@ -97,7 +99,7 @@ let timePassed  = {
 
 let inventory = {
   stoneCollected: 0,
-  logsCollected: 0,
+  logsCollected: 999,
   porkCollected: 0,
   porkchopCollected: 0,
   burntFleshCollected: 0,
@@ -109,7 +111,7 @@ let inventory = {
   adamantiumOreCollected: 0,
   adamantiumCollected: 0,
   coalCollected: 0,
-  workshopsCollected: 0,
+  workshopsCollected: 1,
   doorsCollected: 0,
   spikesCollected: 0,
   woodenSwordCollected: 0,
@@ -401,6 +403,7 @@ function mousePressed(){
               inventory.workshopsCollected++;
              } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile if the player
              //doesn't intend to craft.
+             
         
              
             
@@ -417,6 +420,14 @@ function mousePressed(){
                 if(blockSelected === WORKSHOP && inventory.workshopsCollected>0){
                   grid[y][x] = WORKSHOP;
                   inventory.workshopsCollected--;
+                  
+                  let newWorkshop = {
+                    workShopY: y*cellSize,
+                    workShopX: x*cellSize,
+                    workShopZ: oldZ
+                  }
+
+                  workshops.push(newWorkshop);
                 }
               }
               else {
@@ -453,6 +464,14 @@ function mousePressed(){
               //Fourth slot is workshop.
               craftingState = "Workshop";
               blockSelected = WORKSHOP;
+            }
+            else if (slot === 4){
+              //Fifth slot is stone pickaxe.
+              craftingState = "Stone Pickaxe";
+            }
+            else if (slot === 5){
+              //Sixth slot is stone sword.
+              craftingState = "Stone Sword";
             }
             else if (slot > 20) {
               menuState = "closed";
@@ -619,6 +638,15 @@ function movePlayer(x, y) {
     text("Planks: "+inventory.logsCollected, width-width/4+2, 20);
     text("Work Stations: "+inventory.workshopsCollected, width-width/4+2, 40);
     text("Wooden Pick: "+inventory.woodenPickaxeCollected, width-width/4+2, 30);
+    text("Stone Pick: "+inventory.stonePickaxeCollected, width-width/4+2, 50);
+    text("Stone Sword: "+inventory.stoneSwordCollected, width-width/4+2, 60);
+    text("Coal: "+inventory.coalCollected, width-width/4+2, 70);
+    text("Iron Ore: "+inventory.ironOreCollected, width-width/4+2, 80);
+    text("Iron Ingots: "+inventory.ironCollected, width-width/4+2, 90);
+    text("Iron Pick: "+inventory.ironPickaxeCollected, width-width/4+2, 100);
+    text("Iron Sword: "+inventory.ironSwordCollected, width-width/4+2, 110);
+    text("Iron Armor: "+inventory.ironArmorCollected, width-width/4+2, 120);
+  
     rect(width-width/4, height/3, 100, 10);
     fill("white");
     text("CLOSE", width-width/4+30, height/3+10);
@@ -728,6 +756,38 @@ function movePlayer(x, y) {
     }
     }
   }
+  else if (craftingState === "Stone Pickaxe") {
+    fill("black");
+    text("Recipe:", width-width/4-108, 22);
+    text("- 2 Wood Planks \n- 5 Stone \n- Workbench", width-width/4-108, 42);
+    if (inventory.logsCollected >= 2 && 
+      inventory.stoneCollected >= 5 &&
+      workshopCraft === true){
+      fill("#d3d3d3");
+      rect(width-width/4-100, 70, 80, 30);
+      fill("brown");
+      textSize(20);
+      stroke(10);
+      text("CRAFT", width-width/4-92, 90);
+      textSize(12);
+      stroke(30);
+
+      if (mouseX >= width-width/4-100 && 
+        mouseX <= width-width/4-20 &&
+        mouseY >= 70 &&
+        mouseY <= 100
+      ){
+        fill("silver");
+        rect(width-width/4-100, 70, 80, 30);
+        fill("brown");
+        textSize(20);
+        stroke(10);
+        text("CRAFT", width-width/4-92, 90)
+        textSize(12);
+        stroke(30);
+    }
+    }
+  }
   }
   }
  
@@ -755,13 +815,27 @@ if (mouseX >= width-width/4-100 &&
   inventory.logsCollected -= 5;
   inventory.stoneCollected -= 5;
 }
+if (mouseX >= width-width/4-100 && 
+  mouseX <= width-width/4-20 &&
+  mouseY >= 70 &&
+  mouseY <= 100 &&
+  inventory.logsCollected >= 2 && 
+  inventory.stoneCollected >= 5 &&
+  craftingState === "Stone Pickaxe" &&
+  workshopCraft2 === "open"
+){
+  inventory.stonePickaxeCollected++;
+  inventory.logsCollected -= 2;
+  inventory.stoneCollected -= 5;
+}
 }
 
 function workshopCrafting() {
   if (dist(player.x*cellSize+cellSize/2, player.y*cellSize+cellSize/2, mouseX, mouseY) < cellSize*4) {
     workshopCraft = true;
   }
-  else if (dist(player.x*cellSize+cellSize/2, player.y*cellSize+cellSize/2, mouseX, mouseY) > cellSize*4) {
+  else {
     workshopCraft = false;
+    workshopCraft2 = "closed";
   }
 }
