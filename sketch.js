@@ -398,12 +398,19 @@ function mousePressed(){
               grid[y][x] = 0;
               inventory.logsCollected++;
              } //If the tile is a log/plank, add 1 log/plank to inventory and replace with empty tile.
-             else if (grid[y][x] === WORKSHOP && workshopState === "closed"){
+             else if (grid[y][x] === WORKSHOP){
               grid[y][x] = 0;
               inventory.workshopsCollected++;
-             } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile if the player
-             //doesn't intend to craft.
-             
+              for (i = 0; i < workshops.length; i++){
+                if (y*cellSize === workshops[i].workShopY && x*cellSize === workshops[i].workShopX && oldZ === workshops[i].workShopZ) {
+                  workshops.pop(workshops[i]);
+                }
+              }
+             } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile.
+             else if (grid[y][x] === COAL && inventory.stonePickaxeCollected>0){
+              grid[y][x] = 0;
+              inventory.coalCollected++;
+             } //If the tile is coal, add 1 coal to inventory and replace with empty tile.
         
              
             
@@ -515,14 +522,6 @@ function mousePressed(){
     movePlayer(player.x - 1, player.y + 0); //-1 on x axis, 0 on y axis
   }
   
-  if (key === "c") { //toggles workshop crafting
-    if (workshopState === "closed") {
-      workshopState = "open";
-  }
-  else if(workshopState === "open") {
-    workshopState = "closed";
-  }
-  }
 }
 
 
@@ -759,7 +758,9 @@ function movePlayer(x, y) {
   else if (craftingState === "Stone Pickaxe") {
     fill("black");
     text("Recipe:", width-width/4-108, 22);
-    text("- 2 Wood Planks \n- 5 Stone \n- Workbench", width-width/4-108, 42);
+    text(`- 2 Wood Planks 
+- 5 Stone
+- Workbench`, width-width/4-108, 37);
     if (inventory.logsCollected >= 2 && 
       inventory.stoneCollected >= 5 &&
       workshopCraft === true){
@@ -822,7 +823,7 @@ if (mouseX >= width-width/4-100 &&
   inventory.logsCollected >= 2 && 
   inventory.stoneCollected >= 5 &&
   craftingState === "Stone Pickaxe" &&
-  workshopCraft2 === "open"
+  workshopCraft === true
 ){
   inventory.stonePickaxeCollected++;
   inventory.logsCollected -= 2;
@@ -831,11 +832,15 @@ if (mouseX >= width-width/4-100 &&
 }
 
 function workshopCrafting() {
-  if (dist(player.x*cellSize+cellSize/2, player.y*cellSize+cellSize/2, mouseX, mouseY) < cellSize*4) {
-    workshopCraft = true;
+  for (let i = 0; i<workshops.length; i++) {
+    if (dist(player.x*cellSize+cellSize/2, player.y*cellSize+cellSize/2, workshops[i].workShopX, workshops[i].workShopY) < cellSize*4 &&
+      workshops[i].workShopZ === oldZ) {
+      workshopCraft = true;
+    }
+    else {
+      workshopCraft = false;
+      workshopCraft2 = "closed";
+    }
   }
-  else {
-    workshopCraft = false;
-    workshopCraft2 = "closed";
-  }
+  
 }
