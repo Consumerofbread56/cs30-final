@@ -4,7 +4,7 @@
 I am building a minecraft-like survival game that utilizes multi-dimensional arrays and a grid-based movement/placement system.
 
 ## Needs to Have List
-- A system of grids that are saved and can be loaded into the screen the player is using via designated tiles
+- A system of grids that are saved and can be loaded into the screen the player is using designated tiles
 - Many (at least 7) holdable and placeable blocks
 - An inventory system and crafting/small progression system
 - At least one entity other than the player, preferably an enemy, that spawns randomly

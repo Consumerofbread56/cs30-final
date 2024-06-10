@@ -30,10 +30,11 @@ let craftingState = "None";
 
 let menuState = "closed";
 
-let workshopState = "closed";
-
 let workshopCraft = false;
-let workshopCraft2 = false;
+
+let lastSlot;
+
+let pigCounter = 0;
 // const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
@@ -58,6 +59,7 @@ let newCielingHoleLocationX = [];
 let newCielingHoleLocationY = [];
 let oldGrid = [];
 let workshops = [];
+let pigs = [];
 
 //How many tiles across the grid is
 const GRID_SIZE = 30;
@@ -74,7 +76,7 @@ const TREE = 5;
 
 
 const PIG = 6;
-const ONI = 7;
+const HELLCRAWLER = 7;
 const GOBLIN = 8;
 const IRON = 10;
 const GOLD = 11;
@@ -83,10 +85,17 @@ const COAL = 13;
 const WORKSHOP = 14;
 const DOOR = 15;
 const LAVA = 16;
+const STONE_BRICKS = 18;
+const WOODEN_FLOOR = 19;
 
 // const SPIKES = 17;
-const TREE_SR = 20000;
+const TREE_SR = 30000;
 const MAX_TREES = 20;
+
+const PIG_SR = 1000;
+const MAX_PIGS = 2; //Note that the const MAX_PIGS signifies the maximum number of pigs to include a 0th pig
+//(uses in for loop where i = 0; i<MAX_PIGS; i++)
+const PIG_IDLE_TIME = 3000;
 
 let player = {
   x: 0,
@@ -95,6 +104,8 @@ let player = {
 
 let timePassed  = {
   trees: 0,
+  pigs: 0,
+  pigPanickedMovement: 0
 };
 
 let inventory = {
@@ -119,13 +130,15 @@ let inventory = {
   stoneSwordCollected: 0,
   stonePickaxeCollected: 0,
   ironPickaxeCollected: 0,
-  ironSwordCollected: 0,
+  ironSwordCollected: 1,
   ironArmorCollected: 0,
   adamantiumPickaxeCollected: 0,
   adamantiumSwordCollected: 0,
   adamantiumArmorCollected: 0,
   amuletCollected: 0,
-  crucibleCollected: 0
+  crucibleCollected: 0,
+  stoneBricksCollected: 0,
+  woodenFlooringCollected: 0
 };
 
 // some day...
@@ -142,7 +155,7 @@ let inventory = {
 //   healthPoints: 20,
 //   strength: 2
 // }
-// let demon = {
+// let hellcrawler = {
 //   x: 0,
 //   y: 0,
 //   healthPoints: 100,
@@ -150,6 +163,68 @@ let inventory = {
 //   necrosingStrength: 2
 // }
 //
+
+class Pig {
+constructor(x, y, pigNumber) {
+  this.oldX = x;
+  this.oldY = y;
+  this.x = x;
+  this.y = y;
+  this.movementSpeed = 0;
+  this.pigPassiveMovement = 0;
+  this.panickedMovement = false;
+  this.health = 7;
+  this.deathState = false;
+  this.moveState = true;
+  this.pigNumber = pigNumber;
+}
+move() {
+  if(this.moveState = true) {
+    let choice = random(100);
+    if (choice > 75 && this.x<GRID_SIZE) {
+      this.x++;
+    }
+    else if (choice > 50 && this.x>0) {
+      this.x--;
+    }
+    else if (choice > 25 && this.y<GRID_SIZE) {
+      this.y++;
+    }
+    else if (choice > 0 && this.y>0){
+      this.y--;
+    }
+  }
+  
+}
+panickingMovement() {
+  if (millis() > this.movementSpeed && this.panickedMovement === true) {
+    this.move();
+    this.movementSpeed = millis()+PIG_IDLE_TIME/4;
+  }
+  }
+passiveMovement() {
+  if (millis() > this.pigPassiveMovement) {
+    if (millis() > this.movementSpeed) {
+      this.move();
+      this.pigPassiveMovement = millis()+PIG_IDLE_TIME+random(100);
+      
+    }
+
+  }
+}
+die() {
+  if (this.deathState === true) {
+    grid[this.y][this.x] = 0;
+    this.moveState = false;
+    pigs.pop(this.pigNumber);
+    
+
+  }
+
+}
+  
+}
+
 
 let grassImg;
 let treeImg;
@@ -187,6 +262,18 @@ function draw() {
   displayCraftingMenu();
   //Checks if the player is in the vicinity of a workshop.
   workshopCrafting();
+  //Spawns pigs.
+  spawnPigs();
+  //moves pigs.
+  for (let i = 0; i<pigs.length; i++){
+    pigs[i].die();
+    if (pigs[i] != undefined){
+      pigs[i].passiveMovement();
+    }
+    
+  }
+  movePigs();
+  
 }
 
 
@@ -249,6 +336,9 @@ function displayGrid() {
       else if (grid[y][x] === WORKSHOP){
         fill("brown");
       }
+      else if (grid[y][x] === PIG){
+        fill("pink");
+      }
       else {
         //Open spaces are green on zLevel 32 and white on any zLevel below.
         if (oldZ === 32){
@@ -271,7 +361,8 @@ function displayGrid() {
        if (mouseX > x*cellSize &&
           mouseX < x*cellSize + cellSize &&
           mouseY > y*cellSize &&
-          mouseY < y*cellSize + cellSize) {
+          mouseY < y*cellSize + cellSize &&
+          dist(player.x*cellSize+cellSize/2, player.y*cellSize+cellSize/2, mouseX, mouseY) < cellSize*4) {
           
             
               topLeftCorner.x = x*cellSize;
@@ -342,6 +433,12 @@ function generateRandomGrid(rows, cols){
           //If below Z: 20, generate lava. Amount of lava generated depends on how deep you go.
           emptyArray[y].push(LAVA);
         }
+        else if (oldZ < 31 && oldZ >= 20 && (random(50)) > 47.5 + (oldZ/15)) {
+          emptyArray[y].push(COAL);
+        }
+        else if (oldZ < 26 && (random(50)) > 48 + (oldZ/20)) {
+          emptyArray[y].push(IRON);
+        }
         else {
           //If none of the above apply, generate an empty tile.
             emptyArray[y].push(0);
@@ -402,7 +499,9 @@ function mousePressed(){
               grid[y][x] = 0;
               inventory.workshopsCollected++;
               for (i = 0; i < workshops.length; i++){
-                if (y*cellSize === workshops[i].workShopY && x*cellSize === workshops[i].workShopX && oldZ === workshops[i].workShopZ) {
+                if (y*cellSize === workshops[i].workShopY && 
+                  x*cellSize === workshops[i].workShopX && 
+                  oldZ === workshops[i].workShopZ) {
                   workshops.pop(workshops[i]);
                 }
               }
@@ -411,20 +510,44 @@ function mousePressed(){
               grid[y][x] = 0;
               inventory.coalCollected++;
              } //If the tile is coal, add 1 coal to inventory and replace with empty tile.
+             else if (grid[y][x] === IRON && inventory.stonePickaxeCollected>0){
+              grid[y][x] = 0;
+              inventory.ironOreCollected++;
+             } //If the tile is iron ore, add 1 iron ore to inventory and replace with empty tile.
+             else if (grid[y][x] === PIG) {
+              for (let i = 0; i<pigs.length; i++){
+                if (pigs[i].y === y && pigs[i].x === x) {
+                  pigs[i].panickedMovement = true;
+                  if (inventory.ironSwordCollected > 0) {
+                    pigs[i].health = pigs[i].health - 7;
+                  }
+                  else if (inventory.stoneSwordCollected > 0) {
+                    pigs[i].health = pigs[i].health - 5;
+                  }
+                  else {
+                    pigs[i].health--;
+                  }
+                  if (pigs[i].health <= 0) {
+                    pigs[i].deathState = true;
+                    inventory.porkCollected = inventory.porkCollected + 1 + floor(random(2));
+                  }
+                }
+              }
+             }
         
              
             
             else if (grid[y][x] === 0){
               if (blockSelected != undefined){
-                if(blockSelected === 1 && inventory.stoneCollected>0){
+                if (blockSelected === 1 && inventory.stoneCollected>0){
                   grid[y].splice(x, 1, STONE);
                   inventory.stoneCollected--;
                 } //If the tile is empty and the block selected in the inventory is stone and you have it, replace with stone, -1 stone.
-                if(blockSelected === PLANK && inventory.logsCollected>0){
+                if (blockSelected === PLANK && inventory.logsCollected>0){
                   grid[y][x] = PLANK;
                   inventory.logsCollected--;
                 } //If the tile is empty and the block selected in the inventory is logs and you have it, replace with log, -1 log.
-                if(blockSelected === WORKSHOP && inventory.workshopsCollected>0){
+                if (blockSelected === WORKSHOP && inventory.workshopsCollected>0){
                   grid[y][x] = WORKSHOP;
                   inventory.workshopsCollected--;
                   
@@ -436,6 +559,14 @@ function mousePressed(){
 
                   workshops.push(newWorkshop);
                 }
+                if (blockSelected === COAL && inventory.coalCollected>0){
+                  grid[y][x] = COAL;
+                  inventory.coalCollected--;
+                } //If this tile is empty and the block selected is coal, replace the empty tile with coal, -1 coal.
+                if (blockSelected === IRON && inventory.ironOreCollected>0){
+                  grid[y][x] = IRON;
+                  inventory.ironOreCollected--;
+                } //If this tile is empty and the block selected is iron ore, replace the empty tile with iron ore, -1 iron ore.
               }
               else {
                 dummy = -dummy;
@@ -480,7 +611,13 @@ function mousePressed(){
               //Sixth slot is stone sword.
               craftingState = "Stone Sword";
             }
-            else if (slot > 20) {
+            else if (slot === 6){
+              blockSelected = COAL;
+            }
+            else if (slot === 7){
+              blockSelected = IRON;
+            }
+            else if (slot === lastSlot) {
               menuState = "closed";
             }
           }
@@ -627,14 +764,30 @@ function movePlayer(x, y) {
  function displayInventory() {
   if(menuState === "open"){
     stroke(30);
-    fill("white");
+    
     for (let i = 0; i<width/6; i+= 10) {
+      fill("white");
       rect(width-width/4, i, 100, 10);
+      if (mouseX > width-width/4 &&
+          mouseX < (width-width/4) + 100 &&
+          mouseY > i &&
+          mouseY < i + 10
+      ) {
+        fill("silver");
+        rect(width-width/4, i, 100, 10);
+      }
+      if (i > width/6-10) {
+      lastSlot = Math.floor(i/10);
+      fill("black");
+      rect(width-width/4, i, 100, 10);
+      fill("white");
+      text("CLOSE", width-width/4+30, i+10);
+      }
     }
    
     fill("black");
     text("Stone: "+inventory.stoneCollected, width-width/4+2, 10);
-    text("Planks: "+inventory.logsCollected, width-width/4+2, 20);
+    text("Wood Planks: "+inventory.logsCollected, width-width/4+2, 20);
     text("Work Stations: "+inventory.workshopsCollected, width-width/4+2, 40);
     text("Wooden Pick: "+inventory.woodenPickaxeCollected, width-width/4+2, 30);
     text("Stone Pick: "+inventory.stonePickaxeCollected, width-width/4+2, 50);
@@ -645,11 +798,11 @@ function movePlayer(x, y) {
     text("Iron Pick: "+inventory.ironPickaxeCollected, width-width/4+2, 100);
     text("Iron Sword: "+inventory.ironSwordCollected, width-width/4+2, 110);
     text("Iron Armor: "+inventory.ironArmorCollected, width-width/4+2, 120);
+    text("Wood Floor: "+inventory.woodenFlooringCollected, width-width/4+2, 130);
+    text("Stone Bricks: "+inventory.stoneBricksCollected, width-width/4+2, 140);
+    text("Raw Pork: "+inventory.porkCollected, width-width/4+2, 150);
   
-    rect(width-width/4, height/3, 100, 10);
-    fill("white");
-    text("CLOSE", width-width/4+30, height/3+10);
-    fill("black");
+    
     
   }
   else{
@@ -760,9 +913,43 @@ function movePlayer(x, y) {
     text("Recipe:", width-width/4-108, 22);
     text(`- 2 Wood Planks 
 - 5 Stone
-- Workbench`, width-width/4-108, 37);
+- Workshop`, width-width/4-108, 37);
     if (inventory.logsCollected >= 2 && 
       inventory.stoneCollected >= 5 &&
+      workshopCraft === true){
+      fill("#d3d3d3");
+      rect(width-width/4-100, 70, 80, 30);
+      fill("brown");
+      textSize(20);
+      stroke(10);
+      text("CRAFT", width-width/4-92, 90);
+      textSize(12);
+      stroke(30);
+
+      if (mouseX >= width-width/4-100 && 
+        mouseX <= width-width/4-20 &&
+        mouseY >= 70 &&
+        mouseY <= 100
+      ){
+        fill("silver");
+        rect(width-width/4-100, 70, 80, 30);
+        fill("brown");
+        textSize(20);
+        stroke(10);
+        text("CRAFT", width-width/4-92, 90)
+        textSize(12);
+        stroke(30);
+    }
+    }
+  }
+  else if (craftingState === "Stone Sword") {
+    fill("black");
+    text("Recipe:", width-width/4-108, 22);
+    text(`- 2 Wood Planks 
+- 7 Stone
+- Workshop`, width-width/4-108, 37);
+    if (inventory.logsCollected >= 2 && 
+      inventory.stoneCollected >= 7 &&
       workshopCraft === true){
       fill("#d3d3d3");
       rect(width-width/4-100, 70, 80, 30);
@@ -829,6 +1016,19 @@ if (mouseX >= width-width/4-100 &&
   inventory.logsCollected -= 2;
   inventory.stoneCollected -= 5;
 }
+if (mouseX >= width-width/4-100 && 
+  mouseX <= width-width/4-20 &&
+  mouseY >= 70 &&
+  mouseY <= 100 &&
+  inventory.logsCollected >= 2 && 
+  inventory.stoneCollected >= 5 &&
+  craftingState === "Stone Sword" &&
+  workshopCraft === true
+){
+  inventory.stoneSwordCollected++;
+  inventory.logsCollected -= 2;
+  inventory.stoneCollected -= 7;
+}
 }
 
 function workshopCrafting() {
@@ -839,8 +1039,52 @@ function workshopCrafting() {
     }
     else {
       workshopCraft = false;
-      workshopCraft2 = "closed";
     }
   }
+}
+
+function spawnPigs(){
+  if (pigs.length <= MAX_PIGS){
+  let aPig = new Pig(floor(random(GRID_SIZE)), floor(random(GRID_SIZE)), pigs.length);
+  if (grid[aPig.y][aPig.x] === 0 && 
+    zLevel === 32 && 
+    millis() > timePassed.pigs + PIG_SR ){
+      pigs.push(aPig);
+      timePassed.pigs = timePassed.pigs + PIG_SR;
+  }
+  if (pigs.length === 3) {
+    timePassed.pigs = millis();
+  }
+}
+}
+
+function movePigs() {
+  for (i = 0; i<pigs.length; i++){
+    if (pigs[i] != undefined) {
+      if (pigs[i].x < GRID_SIZE && pigs[i].y < GRID_SIZE &&
+        pigs[i].x >= 0 && pigs[i].y >= 0 && grid[pigs[i].y][pigs[i].x] === OPEN_TILE && zLevel === 32) {
+        //previous pig location
+        let oldX = pigs[i].oldX;
+        let oldY = pigs[i].oldY;
+  
+        //reset old location to be the tile it was before
+        grid[oldY][oldX] = OPEN_TILE;
+        pigs[i].oldY = pigs[i].y;
+        pigs[i].oldX = pigs[i].x;
+
+        for (let x = 0; x < GRID_SIZE; x++){
+          for (let y = 0; y < GRID_SIZE; y++){
+            
+              if (pigs[i].x === x && pigs[i].y === y ){
+                grid[y][x] = PIG;
+              }
+            
+          }
+        }
+    }
+    
   
 }
+  }
+}
+
