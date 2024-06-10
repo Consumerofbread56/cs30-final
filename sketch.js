@@ -213,11 +213,20 @@ passiveMovement() {
   }
 }
 die() {
-  if (this.deathState === true) {
+  if (this.deathState === true && (this === pigs[this.pigNumber])) {
+    print(this, pigs)
     grid[this.y][this.x] = 0;
     this.moveState = false;
     pigs.pop(this.pigNumber);
-    
+    print(this,pigs,pigs.pigNumber,"dfdfddfd")
+    // pigs[this.pigNumber+1].deathState = false;
+      
+    // the pig number behind "this" need to change by 1
+
+    // for (let i = this. pigNumber + 1; i < pigs.length; i++){
+    //   pigs[i].pigNumber--;
+    // }
+
 
   }
 
@@ -264,6 +273,7 @@ function draw() {
   workshopCrafting();
   //Spawns pigs.
   spawnPigs();
+  
   //moves pigs.
   for (let i = 0; i<pigs.length; i++){
     pigs[i].die();
@@ -1088,3 +1098,6 @@ function movePigs() {
   }
 }
 
+function baconDestroyer2000() {
+
+}
