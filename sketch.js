@@ -35,6 +35,8 @@ let workshopCraft = false;
 let lastSlot;
 
 let pigCounter = 0;
+
+let baconFix = true;
 // const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
@@ -213,12 +215,14 @@ passiveMovement() {
   }
 }
 die() {
-  if (this.deathState === true && (this === pigs[this.pigNumber])) {
+
+  if (this.deathState === true && (this === pigs[this.pigNumber]) && baconFix === true) {
     print(this, pigs)
     grid[this.y][this.x] = 0;
     this.moveState = false;
     pigs.pop(this.pigNumber);
     print(this,pigs,pigs.pigNumber,"dfdfddfd")
+    baconFix = false;
     // pigs[this.pigNumber+1].deathState = false;
       
     // the pig number behind "this" need to change by 1
@@ -276,12 +280,15 @@ function draw() {
   
   //moves pigs.
   for (let i = 0; i<pigs.length; i++){
+    
     pigs[i].die();
+  
+    
     if (pigs[i] != undefined){
       pigs[i].passiveMovement();
     }
-    
   }
+    
   movePigs();
   
 }
@@ -525,6 +532,7 @@ function mousePressed(){
               inventory.ironOreCollected++;
              } //If the tile is iron ore, add 1 iron ore to inventory and replace with empty tile.
              else if (grid[y][x] === PIG) {
+              if (baconFix === true) {
               for (let i = 0; i<pigs.length; i++){
                 if (pigs[i].y === y && pigs[i].x === x) {
                   pigs[i].panickedMovement = true;
@@ -540,8 +548,10 @@ function mousePressed(){
                   if (pigs[i].health <= 0) {
                     pigs[i].deathState = true;
                     inventory.porkCollected = inventory.porkCollected + 1 + floor(random(2));
+                  
                   }
                 }
+              }
               }
              }
         
