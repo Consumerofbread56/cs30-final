@@ -35,6 +35,8 @@ let workshopCraft = false;
 let lastSlot;
 
 let pigCounter = 0;
+
+let baconFix = true;
 // const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
@@ -214,11 +216,16 @@ passiveMovement() {
 }
 die() {
   if (this.deathState === true && (this === pigs[this.pigNumber])) {
-    print(this, pigs)
+    //print(this, "hanson", pigs[0],pigs[1],pigs[2])
     grid[this.y][this.x] = 0;
     this.moveState = false;
-    pigs.pop(this.pigNumber);
-    print(this,pigs,pigs.pigNumber,"dfdfddfd")
+    if (pigs[this.pigNumber].pigNumber === this.pigNumber){
+      print("156pm this is this.nums = ", this.pigNumber, "\n0", pigs[0], "\n1", pigs[1], "\n2", pigs[2]);
+      pigs = this.popGood(this.pigNumber, pigs);
+      print("156pm this is this.num = ", this.pigNumber, "\n0", pigs[0], "\n1", pigs[1], "\n2", pigs[2]);
+    }
+    //print(this,"\n pigs 1,2,3", pigs[0],pigs[1],pigs[2],"\n pig number ", pigs.pigNumber,"dfdfdfdfd");
+    baconFix = false;
     // pigs[this.pigNumber+1].deathState = false;
       
     // the pig number behind "this" need to change by 1
@@ -226,12 +233,20 @@ die() {
     // for (let i = this. pigNumber + 1; i < pigs.length; i++){
     //   pigs[i].pigNumber--;
     // }
-
-
   }
-
 }
-  
+
+popGood(numberToPop, array){
+  let arrayFinal;
+  print(array)
+  for (let i = 0; i < array.length; i++){
+    if (i !== numberToPop){
+      arrayFinal.push(array[i])
+    }
+  }
+  return arrayFinal;
+}
+
 }
 
 
@@ -275,12 +290,16 @@ function draw() {
   spawnPigs();
   
   //moves pigs.
-  for (let i = 0; i<pigs.length; i++){
-    pigs[i].die();
-    if (pigs[i] != undefined){
-      pigs[i].passiveMovement();
+  if (baconFix = true) {
+    for (let i = 0; i<pigs.length; i++){
+      pigs[i].die();
+      if (pigs[i] != undefined){
+        pigs[i].passiveMovement();
+      }
     }
-    
+    for (let i = 0; i < pigs.length; i++){
+      pigs[i].pigNumber = i;
+    }
   }
   movePigs();
   
