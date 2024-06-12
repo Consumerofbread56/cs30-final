@@ -28,7 +28,7 @@ let oldZ = 32;
 //Tracks the state of the crafting menu.
 let craftingState = "None";
 
-let menuState = "closed";
+let menuState = "open";
 
 let workshopCraft = false;
 
@@ -121,13 +121,13 @@ let inventory = {
   porkchopCollected: 0,
   burntFleshCollected: 0,
   fleshCollected: 0,
-  ironOreCollected: 0,
+  ironOreCollected: 10,
   ironCollected: 0,
   goldOreCollected: 0,
   goldCollected: 0,
   adamantiumOreCollected: 0,
   adamantiumCollected: 0,
-  coalCollected: 0,
+  coalCollected: 10,
   workshopsCollected: 1,
   doorsCollected: 0,
   spikesCollected: 0,
@@ -1133,7 +1133,7 @@ if (x < GRID_SIZE && y < GRID_SIZE &&
 - 1 Iron Ore
 - Workshop`, width-width/4-108, 37);
     if (inventory.coalCollected >= 1 && 
-      inventory.ironOreCollectedCollected >= 1 &&
+      inventory.ironOreCollected >= 1 &&
       workshopCraft === true){
       fill("#d3d3d3");
       rect(width-width/4-100, 70, 80, 30);
@@ -1316,7 +1316,7 @@ if (mouseX >= width-width/4-100 &&
   mouseY >= 70 &&
   mouseY <= 100 &&
   inventory.coalCollected >= 1 && 
-  inventory.ironOreCollectedCollected >= 1 &&
+  inventory.ironOreCollected >= 1 &&
   craftingState === "Iron Ingot" &&
   workshopCraft === true
 ){
@@ -1333,7 +1333,7 @@ if (mouseX >= width-width/4-100 &&
   craftingState === "Iron Sword" &&
   workshopCraft === true
 ){
-  inventory.stoneSwordCollected++;
+  inventory.ironSwordCollected++;
   inventory.logsCollected -= 2;
   inventory.ironCollected -= 7;
 }
