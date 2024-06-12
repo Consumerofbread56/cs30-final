@@ -37,6 +37,10 @@ let lastSlot;
 let pigCounter = 0;
 
 let baconFix = true;
+
+let startMenuState = true;
+
+let tileState = "open tile"
 // const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
@@ -215,13 +219,16 @@ passiveMovement() {
   }
 }
 die() {
-
-  if (this.deathState === true && (this === pigs[this.pigNumber]) && baconFix === true) {
-    print(this, pigs)
+  if (this.deathState === true && (this === pigs[this.pigNumber])) {
+    //print(this, "hanson", pigs[0],pigs[1],pigs[2])
     grid[this.y][this.x] = 0;
     this.moveState = false;
-    pigs.pop(this.pigNumber);
-    print(this,pigs,pigs.pigNumber,"dfdfddfd")
+    if (pigs[this.pigNumber].pigNumber === this.pigNumber){
+      print("156pm this is this.nums = ", this.pigNumber, "\n0", pigs[0], "\n1", pigs[1], "\n2", pigs[2]);
+      pigs = this.popGood(this.pigNumber, pigs);
+      print("156pm this is this.num = ", this.pigNumber, "\n0", pigs[0], "\n1", pigs[1], "\n2", pigs[2]);
+    }
+    //print(this,"\n pigs 1,2,3", pigs[0],pigs[1],pigs[2],"\n pig number ", pigs.pigNumber,"dfdfdfdfd");
     baconFix = false;
     // pigs[this.pigNumber+1].deathState = false;
       
@@ -230,12 +237,20 @@ die() {
     // for (let i = this. pigNumber + 1; i < pigs.length; i++){
     //   pigs[i].pigNumber--;
     // }
-
-
   }
-
 }
-  
+
+popGood(numberToPop, array){
+  let arrayFinal;
+  print(array)
+  for (let i = 0; i < array.length; i++){
+    if (i !== numberToPop){
+      arrayFinal.push(array[i])
+    }
+  }
+  return arrayFinal;
+}
+
 }
 
 
@@ -244,6 +259,11 @@ let treeImg;
 let plankImg;
 let gravelImg;
 let stoneImg;
+let dirtBGImg;
+let logoImg;
+let ambientBGM;
+let woodenFloorImg;
+let stoneBrickImg;
 
 function preload(){
   grassImg = loadImage("grass.png");
@@ -251,17 +271,28 @@ function preload(){
   plankImg = loadImage("plank.jpg");
   gravelImg = loadImage("gravel.png");
   stoneImg = loadImage("stone.png");
+  dirtBGImg = loadImage("dirtBackground.jpg");
+  logoImg = loadImage("MINECRAFT.png");
+  woodenFloorImg = loadImage("woodenFloor.png");
+  stoneBrickImg = loadImage("stoneBrick.png")
+  ambientBGM = loadSound("Collect_Ambient_BGM.wav");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  textFont("Garamond")
+  textFont("Garamond");
   //When started, generates a grid the size of the windowWidth and with GRID_SIZE tiles across.
   grid = generateRandomGrid(GRID_SIZE, GRID_SIZE);
   cellSize = height/grid.length;
 }
 
 function draw() {
+  if (startMenuState === true) {
+    minecraftBackground();
+    displayStartButton();
+    displayTutorialButton();
+  }
+  else {
   background(220);
   //Draws grid.
   displayGrid();
@@ -279,18 +310,20 @@ function draw() {
   spawnPigs();
   
   //moves pigs.
-  for (let i = 0; i<pigs.length; i++){
-    
-    pigs[i].die();
-  
-    
-    if (pigs[i] != undefined){
-      pigs[i].passiveMovement();
+  if (baconFix = true) {
+    for (let i = 0; i<pigs.length; i++){
+      pigs[i].die();
+      if (pigs[i] != undefined){
+        pigs[i].passiveMovement();
+      }
+    }
+    for (let i = 0; i < pigs.length; i++){
+      pigs[i].pigNumber = i;
     }
   }
     
   movePigs();
-  
+}
 }
 
 
@@ -341,7 +374,7 @@ function displayGrid() {
         fill("maroon");
       }
       else if (grid[y][x] === PLANK){
-        imageOrColour = "image"
+        imageOrColour = "image";
         image(plankImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Wooden Planks ^^
       else if (grid[y][x] === COAL){
@@ -355,6 +388,14 @@ function displayGrid() {
       }
       else if (grid[y][x] === PIG){
         fill("pink");
+      }
+      else if (grid[y][x] === WOODEN_FLOOR) {
+        imageOrColour = "image";
+        image(woodenFloorImg, x * cellSize, y * cellSize, cellSize, cellSize);
+      }
+      else if (grid[y][x] === STONE_BRICKS) {
+        imageOrColour = "image";
+        image(stoneBrickImg, x * cellSize, y * cellSize, cellSize, cellSize);
       }
       else {
         //Open spaces are green on zLevel 32 and white on any zLevel below.
@@ -554,6 +595,14 @@ function mousePressed(){
               }
               }
              }
+             else if (grid[y][x] === WOODEN_FLOOR) {
+              grid[y][x] = OPEN_TILE;
+              inventory.woodenFlooringCollected++;
+             }
+             else if (grid[y][x] === STONE_BRICKS) {
+              grid[y][x] = OPEN_TILE;
+              inventory.stoneBricksCollected++;
+             }
         
              
             
@@ -587,6 +636,14 @@ function mousePressed(){
                   grid[y][x] = IRON;
                   inventory.ironOreCollected--;
                 } //If this tile is empty and the block selected is iron ore, replace the empty tile with iron ore, -1 iron ore.
+                if (blockSelected === WOODEN_FLOOR && inventory.woodenFlooringCollected>0){
+                  grid[y][x] = WOODEN_FLOOR;
+                  inventory.woodenFlooringCollected--;
+                } //If this tile is empty and the block selected is wooden flooring, replace the empty tile with flooring, -1 flooring.
+                if (blockSelected === STONE_BRICKS && inventory.stoneBricksCollected>0){
+                  grid[y][x] = STONE_BRICKS;
+                  inventory.stoneBricksCollected--;
+                } //If this tile is empty and the block selected is stone bricks, replace the empty tile with stone bricks, -1 stone bricks.
               }
               else {
                 dummy = -dummy;
@@ -637,19 +694,37 @@ function mousePressed(){
             else if (slot === 7){
               blockSelected = IRON;
             }
+            else if (slot === 8) {
+              craftingState = "Iron Ingot";
+            }
+            else if (slot === 10) {
+              craftingState = "Iron Sword";
+            }
+            else if (slot === 12) {
+              craftingState = "Wooden Flooring";
+              blockSelected = WOODEN_FLOOR;
+            }
+            else if (slot === 13) {
+              craftingState = "Stone Brick";
+              blockSelected = STONE_BRICKS;
+            }
             else if (slot === lastSlot) {
               menuState = "closed";
+              craftingState = "None";
+            }
+            else if (slot > lastSlot) {
+              craftingState = "None";
             }
           }
         }
-      }
-     
-        
-      }
-      craftSomething();
+      }  
+    }
+
+  craftSomething();
   if (mouseX>width-width/4 && mouseX<width-width/4+100 && mouseY<10 && menuState === "closed"){
     menuState = "open";
   }
+  startMenu();
     
 }   
   
@@ -701,8 +776,16 @@ function movePlayer(x, y) {
         else if (grid[oldY][oldX] === FLOOR_HOLE_TILE){
           grid[oldY][oldX] = FLOOR_HOLE_TILE;
         }
+        
         else {
-          grid[oldY][oldX] = OPEN_TILE;
+          if (tileState === "open tile") {
+            grid[oldY][oldX] = OPEN_TILE;
+          }
+          else {
+            grid[oldY][oldX] = WOODEN_FLOOR;
+            tileState = "open tile";
+          }
+          
         }
        
  
@@ -724,7 +807,13 @@ function movePlayer(x, y) {
 
 
       //reset old location to be an empty tile
-      grid[oldY][oldX] = OPEN_TILE;
+      if(tileState === "open tile") {
+        grid[oldY][oldX] = OPEN_TILE;
+      }
+      else {
+        grid[oldX][oldY] = WOODEN_FLOOR;
+        tileState = "open tile";
+      }
      
       grid[player.y][player.x] = FLOOR_HOLE_TILE;
      
@@ -744,15 +833,56 @@ function movePlayer(x, y) {
 
 
   //reset old location to be an empty tile
-  grid[oldY][oldX] = OPEN_TILE;
-
+  if(tileState === "open tile") {
+    grid[oldY][oldX] = OPEN_TILE;
+  }
+  else {
+    grid[oldX][oldY] = WOODEN_FLOOR;
+    tileState = "open tile"
+  }
+  
 
   grid[player.y][player.x] = CIELING_HOLE_TILE;
 
   //Go up on 3D grid.
   zLevel = zLevel + 1;
 }
+if (x < GRID_SIZE && y < GRID_SIZE &&
+  x >= 0 && y >= 0 && grid[y][x] === WOODEN_FLOOR) {
+  //previous player location
+  let oldX = player.x;
+  let oldY = player.y;
+
+
+  //move the player
+  player.x = x;
+  player.y = y;
+
+  //reset old location to be the tile it was before
+  if (grid[oldY][oldX] === CIELING_HOLE_TILE){
+    grid[oldY][oldX] = CIELING_HOLE_TILE;
+  }
+  else if (grid[oldY][oldX] === FLOOR_HOLE_TILE){
+    grid[oldY][oldX] = FLOOR_HOLE_TILE;
+  }
+  else {
+    if(tileState === "flooring") {
+      grid[oldY][oldX] = WOODEN_FLOOR;
+    }
+    else {
+      grid[oldY][oldX] = OPEN_TILE;
+      tileState = "flooring";
+    }
+    
+  }
+
+  //move the player to the new spot
+  grid[player.y][player.x] = PLAYER;
+
+
 }
+}
+
 
 
  function changeLayer(level) {
@@ -996,6 +1126,138 @@ function movePlayer(x, y) {
     }
     }
   }
+  else if (craftingState === "Iron Ingot") {
+    fill("black");
+    text("Recipe:", width-width/4-108, 22);
+    text(`- 1 Coal 
+- 1 Iron Ore
+- Workshop`, width-width/4-108, 37);
+    if (inventory.coalCollected >= 1 && 
+      inventory.ironOreCollectedCollected >= 1 &&
+      workshopCraft === true){
+      fill("#d3d3d3");
+      rect(width-width/4-100, 70, 80, 30);
+      fill("brown");
+      textSize(20);
+      stroke(10);
+      text("CRAFT", width-width/4-92, 90);
+      textSize(12);
+      stroke(30);
+
+      if (mouseX >= width-width/4-100 && 
+        mouseX <= width-width/4-20 &&
+        mouseY >= 70 &&
+        mouseY <= 100
+      ){
+        fill("silver");
+        rect(width-width/4-100, 70, 80, 30);
+        fill("brown");
+        textSize(20);
+        stroke(10);
+        text("CRAFT", width-width/4-92, 90)
+        textSize(12);
+        stroke(30);
+    }
+    }
+  }
+  else if (craftingState === "Iron Sword") {
+    fill("black");
+    text("Recipe:", width-width/4-108, 22);
+    text(`- 2 Wood Planks 
+- 7 Iron Ingots
+- Workshop`, width-width/4-108, 37);
+    if (inventory.logsCollected >= 2 && 
+      inventory.ironCollected >= 7 &&
+      workshopCraft === true){
+      fill("#d3d3d3");
+      rect(width-width/4-100, 70, 80, 30);
+      fill("brown");
+      textSize(20);
+      stroke(10);
+      text("CRAFT", width-width/4-92, 90);
+      textSize(12);
+      stroke(30);
+
+      if (mouseX >= width-width/4-100 && 
+        mouseX <= width-width/4-20 &&
+        mouseY >= 70 &&
+        mouseY <= 100
+      ){
+        fill("silver");
+        rect(width-width/4-100, 70, 80, 30);
+        fill("brown");
+        textSize(20);
+        stroke(10);
+        text("CRAFT", width-width/4-92, 90)
+        textSize(12);
+        stroke(30);
+    }
+    }
+  }
+  else if (craftingState === "Wooden Flooring") {
+    fill("black");
+    text("Recipe:", width-width/4-108, 22);
+    text(`- 4 Wood Planks 
+- Workshop`, width-width/4-108, 42);
+    if (inventory.logsCollected >= 4 && 
+      workshopCraft === true){
+      fill("#d3d3d3");
+      rect(width-width/4-100, 70, 80, 30);
+      fill("brown");
+      textSize(20);
+      stroke(10);
+      text("CRAFT", width-width/4-92, 90);
+      textSize(12);
+      stroke(30);
+
+      if (mouseX >= width-width/4-100 && 
+        mouseX <= width-width/4-20 &&
+        mouseY >= 70 &&
+        mouseY <= 100
+      ){
+        fill("silver");
+        rect(width-width/4-100, 70, 80, 30);
+        fill("brown");
+        textSize(20);
+        stroke(10);
+        text("CRAFT", width-width/4-92, 90)
+        textSize(12);
+        stroke(30);
+    }
+    }
+  }
+  else if (craftingState === "Stone Brick") {
+    fill("black");
+    text("Recipe:", width-width/4-108, 22);
+    text(`- 4 Stone 
+- Workshop`, width-width/4-108, 42);
+    if (inventory.stoneCollected >= 4 && 
+      workshopCraft === true){
+      fill("#d3d3d3");
+      rect(width-width/4-100, 70, 80, 30);
+      fill("brown");
+      textSize(20);
+      stroke(10);
+      text("CRAFT", width-width/4-92, 90);
+      textSize(12);
+      stroke(30);
+
+      if (mouseX >= width-width/4-100 && 
+        mouseX <= width-width/4-20 &&
+        mouseY >= 70 &&
+        mouseY <= 100
+      ){
+        fill("silver");
+        rect(width-width/4-100, 70, 80, 30);
+        fill("brown");
+        textSize(20);
+        stroke(10);
+        text("CRAFT", width-width/4-92, 90)
+        textSize(12);
+        stroke(30);
+    }
+    }
+  }
   }
   }
  
@@ -1048,6 +1310,54 @@ if (mouseX >= width-width/4-100 &&
   inventory.stoneSwordCollected++;
   inventory.logsCollected -= 2;
   inventory.stoneCollected -= 7;
+}
+if (mouseX >= width-width/4-100 && 
+  mouseX <= width-width/4-20 &&
+  mouseY >= 70 &&
+  mouseY <= 100 &&
+  inventory.coalCollected >= 1 && 
+  inventory.ironOreCollectedCollected >= 1 &&
+  craftingState === "Iron Ingot" &&
+  workshopCraft === true
+){
+  inventory.ironCollected++;
+  inventory.coalCollected--;
+  inventory.ironOreCollected--;
+}
+if (mouseX >= width-width/4-100 && 
+  mouseX <= width-width/4-20 &&
+  mouseY >= 70 &&
+  mouseY <= 100 &&
+  inventory.logsCollected >= 2 && 
+  inventory.ironCollected >= 5 &&
+  craftingState === "Iron Sword" &&
+  workshopCraft === true
+){
+  inventory.stoneSwordCollected++;
+  inventory.logsCollected -= 2;
+  inventory.ironCollected -= 7;
+}
+if (mouseX >= width-width/4-100 && 
+  mouseX <= width-width/4-20 &&
+  mouseY >= 70 &&
+  mouseY <= 100 &&
+  inventory.logsCollected >= 4 &&
+  craftingState === "Wooden Flooring" &&
+  workshopCraft === true
+){
+  inventory.woodenFlooringCollected += 4;
+  inventory.logsCollected -= 4;
+}
+if (mouseX >= width-width/4-100 && 
+  mouseX <= width-width/4-20 &&
+  mouseY >= 70 &&
+  mouseY <= 100 &&
+  inventory.stoneCollected >= 4 &&
+  craftingState === "Stone Brick" &&
+  workshopCraft === true
+){
+  inventory.stoneBricksCollected += 4;
+  inventory.stoneCollected -= 4;
 }
 }
 
@@ -1108,6 +1418,67 @@ function movePigs() {
   }
 }
 
-function baconDestroyer2000() {
+function displayStartButton() {
+  stroke(50);
+  if (mouseX < width/20+300 &&
+    mouseX > width/20 &&
+    mouseY < height/6+100 &&
+    mouseY > height/6
+  ) {
+    fill(255,255,255,70);
+  }
+  else {
+    fill(255,255,255,30);
+  }
+  rect(width/20, height/6, 300, 100);
+  
+  stroke("black");
+  textSize(40);
+  fill("white");
+  text("Start Game", width/20 + 60, height/6+height/10);
+}
 
+function minecraftBackground() {
+  image(dirtBGImg, dirtBGImg.width*0, 0, dirtBGImg.width, dirtBGImg.height);
+  image(dirtBGImg, dirtBGImg.width*1, 0, dirtBGImg.width, dirtBGImg.height);
+  image(dirtBGImg, dirtBGImg.width*2, 0, dirtBGImg.width, dirtBGImg.height);
+  image(dirtBGImg, dirtBGImg.width*0, dirtBGImg.height, dirtBGImg.width, dirtBGImg.height);
+  image(dirtBGImg, dirtBGImg.width*1, dirtBGImg.height, dirtBGImg.width, dirtBGImg.height);
+  image(dirtBGImg, dirtBGImg.width*2, dirtBGImg.height, dirtBGImg.width, dirtBGImg.height);
+  fill(0,0,0,100);
+  rect(0,0,width,height);
+  image(logoImg, width/3-width/24, height/3, logoImg.width*2, logoImg.height*2);
+  fill("black");
+}
+
+function displayTutorialButton() {
+  stroke(50);
+  if (mouseX < width/20+300 &&
+    mouseX > width/20 &&
+    mouseY < height/3+height/12+100 &&
+    mouseY > height/3+height/12
+  ) {
+    fill(255,255,255,70);
+  }
+  else {
+    fill(255,255,255,30);
+  }
+  rect(width/20, height/3+height/12, 300, 100);
+  
+  stroke("black");
+  textSize(40);
+  fill("white");
+  text("How to Play", width/20 + 50, height/3+height/12+height/10);
+}
+
+function startMenu() {
+  if (mouseX < width/20+300 &&
+    mouseX > width/20 &&
+    mouseY < height/6+100 &&
+    mouseY > height/6 && startMenuState === true
+  ) {
+    startMenuState = false; 
+    textSize(12);
+    ambientBGM.loop();
+  }
 }
