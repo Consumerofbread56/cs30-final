@@ -28,7 +28,7 @@ let oldZ = 32;
 //Tracks the state of the crafting menu.
 let craftingState = "None";
 
-let menuState = "closed";
+let menuState = "open";
 
 let workshopCraft = false;
 
@@ -98,7 +98,7 @@ const WOODEN_FLOOR = 19;
 const TREE_SR = 30000;
 const MAX_TREES = 20;
 
-const PIG_SR = 1000;
+const PIG_SR = 40000;
 const MAX_PIGS = 2; //Note that the const MAX_PIGS signifies the maximum number of pigs to include a 0th pig
 //(uses in for loop where i = 0; i<MAX_PIGS; i++)
 const PIG_IDLE_TIME = 3000;
@@ -121,13 +121,13 @@ let inventory = {
   porkchopCollected: 0,
   burntFleshCollected: 0,
   fleshCollected: 0,
-  ironOreCollected: 0,
+  ironOreCollected: 10,
   ironCollected: 0,
   goldOreCollected: 0,
   goldCollected: 0,
   adamantiumOreCollected: 0,
   adamantiumCollected: 0,
-  coalCollected: 0,
+  coalCollected: 10,
   workshopsCollected: 1,
   doorsCollected: 0,
   spikesCollected: 0,
@@ -241,10 +241,10 @@ die() {
 }
 
 popGood(numberToPop, array){
-  let arrayFinal;
-  print(array)
+  let arrayFinal = [];
   for (let i = 0; i < array.length; i++){
     if (i !== numberToPop){
+      print(array)
       arrayFinal.push(array[i])
     }
   }
@@ -323,6 +323,11 @@ function draw() {
   }
     
   movePigs();
+  fill("red");
+  textSize(16);
+  text("Z Level: " + zLevel, width/2+width/6, height/5);
+  textSize(12);
+  fill("black");
 }
 }
 
@@ -560,7 +565,8 @@ function mousePressed(){
                 if (y*cellSize === workshops[i].workShopY && 
                   x*cellSize === workshops[i].workShopX && 
                   oldZ === workshops[i].workShopZ) {
-                  workshops.pop(workshops[i]);
+                  workshops.splice(workshops[i], 1);
+                  workshopCraft = false;
                 }
               }
              } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile.
@@ -1133,7 +1139,7 @@ if (x < GRID_SIZE && y < GRID_SIZE &&
 - 1 Iron Ore
 - Workshop`, width-width/4-108, 37);
     if (inventory.coalCollected >= 1 && 
-      inventory.ironOreCollectedCollected >= 1 &&
+      inventory.ironOreCollected >= 1 &&
       workshopCraft === true){
       fill("#d3d3d3");
       rect(width-width/4-100, 70, 80, 30);
@@ -1316,7 +1322,7 @@ if (mouseX >= width-width/4-100 &&
   mouseY >= 70 &&
   mouseY <= 100 &&
   inventory.coalCollected >= 1 && 
-  inventory.ironOreCollectedCollected >= 1 &&
+  inventory.ironOreCollected >= 1 &&
   craftingState === "Iron Ingot" &&
   workshopCraft === true
 ){
@@ -1333,7 +1339,7 @@ if (mouseX >= width-width/4-100 &&
   craftingState === "Iron Sword" &&
   workshopCraft === true
 ){
-  inventory.stoneSwordCollected++;
+  inventory.ironSwordCollected++;
   inventory.logsCollected -= 2;
   inventory.ironCollected -= 7;
 }
@@ -1442,9 +1448,11 @@ function minecraftBackground() {
   image(dirtBGImg, dirtBGImg.width*0, 0, dirtBGImg.width, dirtBGImg.height);
   image(dirtBGImg, dirtBGImg.width*1, 0, dirtBGImg.width, dirtBGImg.height);
   image(dirtBGImg, dirtBGImg.width*2, 0, dirtBGImg.width, dirtBGImg.height);
+  image(dirtBGImg, dirtBGImg.width*3, 0, dirtBGImg.width, dirtBGImg.height);
   image(dirtBGImg, dirtBGImg.width*0, dirtBGImg.height, dirtBGImg.width, dirtBGImg.height);
   image(dirtBGImg, dirtBGImg.width*1, dirtBGImg.height, dirtBGImg.width, dirtBGImg.height);
   image(dirtBGImg, dirtBGImg.width*2, dirtBGImg.height, dirtBGImg.width, dirtBGImg.height);
+  image(dirtBGImg, dirtBGImg.width*3, dirtBGImg.height, dirtBGImg.width, dirtBGImg.height);
   fill(0,0,0,100);
   rect(0,0,width,height);
   image(logoImg, width/3-width/24, height/3, logoImg.width*2, logoImg.height*2);
