@@ -41,6 +41,10 @@ let baconFix = true;
 let startMenuState = true;
 
 let tileState = "open tile"
+
+let playerDeathState = false;
+
+let writer;
 // const RESET_TIME_PASSED = structuredClone(timePassed)
 
 
@@ -116,19 +120,19 @@ let timePassed  = {
 
 let inventory = {
   stoneCollected: 0,
-  logsCollected: 999,
+  logsCollected: 10,
   porkCollected: 0,
   porkchopCollected: 0,
   burntFleshCollected: 0,
   fleshCollected: 0,
-  ironOreCollected: 10,
+  ironOreCollected: 0,
   ironCollected: 0,
   goldOreCollected: 0,
   goldCollected: 0,
   adamantiumOreCollected: 0,
   adamantiumCollected: 0,
-  coalCollected: 10,
-  workshopsCollected: 1,
+  coalCollected: 0,
+  workshopsCollected: 0,
   doorsCollected: 0,
   spikesCollected: 0,
   woodenSwordCollected: 0,
@@ -146,6 +150,39 @@ let inventory = {
   stoneBricksCollected: 0,
   woodenFlooringCollected: 0
 };
+
+let emptyInventory = {
+  stoneCollected: 0,
+  logsCollected: 0,
+  porkCollected: 0,
+  porkchopCollected: 0,
+  burntFleshCollected: 0,
+  fleshCollected: 0,
+  ironOreCollected: 0,
+  ironCollected: 0,
+  goldOreCollected: 0,
+  goldCollected: 0,
+  adamantiumOreCollected: 0,
+  adamantiumCollected: 0,
+  coalCollected: 0,
+  workshopsCollected: 0,
+  doorsCollected: 0,
+  spikesCollected: 0,
+  woodenSwordCollected: 0,
+  woodenPickaxeCollected: 0,
+  stoneSwordCollected: 0,
+  stonePickaxeCollected: 0,
+  ironPickaxeCollected: 0,
+  ironSwordCollected: 0,
+  ironArmorCollected: 0,
+  adamantiumPickaxeCollected: 0,
+  adamantiumSwordCollected: 0,
+  adamantiumArmorCollected: 0,
+  amuletCollected: 0,
+  crucibleCollected: 0,
+  stoneBricksCollected: 0,
+  woodenFlooringCollected: 0
+}
 
 // some day...
 
@@ -264,6 +301,22 @@ let logoImg;
 let ambientBGM;
 let woodenFloorImg;
 let stoneBrickImg;
+let woodWalkSFX1;
+let woodWalkSFX2;
+let stoneWalkSFX1;
+let stoneWalkSFX2;
+let grassWalkSFX1;
+let grassWalkSFX2;
+let woodySFX;
+let stoneySFX;
+let clickSFX;
+let pigImg;
+let playerImg;
+let surfaceCaveImg;
+let undergroundCaveImg;
+let ironImg;
+let coalImg;
+let deathSFX;
 
 function preload(){
   grassImg = loadImage("grass.png");
@@ -274,8 +327,25 @@ function preload(){
   dirtBGImg = loadImage("dirtBackground.jpg");
   logoImg = loadImage("MINECRAFT.png");
   woodenFloorImg = loadImage("woodenFloor.png");
-  stoneBrickImg = loadImage("stoneBrick.png")
+  stoneBrickImg = loadImage("stoneBrick.png");
+  pigImg = loadImage("pig.jpg");
+  playerImg = loadImage("player.jpg");
+  surfaceCaveImg = loadImage("surfaceCave.png");
+  undergroundCaveImg = loadImage("undergroundCave.png");
+  coalImg = loadImage("coal.png");
+  ironImg = loadImage("iron.png");
+
   ambientBGM = loadSound("Collect_Ambient_BGM.wav");
+  woodWalkSFX1 = loadSound("woodWalk1.wav");
+  woodWalkSFX2 = loadSound("woodWalk2.wav");
+  stoneWalkSFX1 = loadSound("stoneWalk1.wav");
+  stoneWalkSFX2 = loadSound("stoneWalk2.wav");
+  grassWalkSFX1 = loadSound("grassWalk1.wav");
+  grassWalkSFX2 = loadSound("grassWalk2.wav");
+  woodySFX = loadSound("woodySFX.mp3");
+  stoneySFX = loadSound("stoneySFX.mp3");
+  clickSFX = loadSound("minecraft_click.mp3");
+  deathSFX = loadSound("fireHurtSFX.mp3");
 }
 
 function setup() {
@@ -310,7 +380,6 @@ function draw() {
   spawnPigs();
   
   //moves pigs.
-  if (baconFix = true) {
     for (let i = 0; i<pigs.length; i++){
       pigs[i].die();
       if (pigs[i] != undefined){
@@ -320,14 +389,12 @@ function draw() {
     for (let i = 0; i < pigs.length; i++){
       pigs[i].pigNumber = i;
     }
-  }
     
   movePigs();
-  fill("red");
-  textSize(16);
-  text("Z Level: " + zLevel, width/2+width/6, height/5);
-  textSize(12);
-  fill("black");
+  displayZYCoord();
+  if (playerDeathState === true){
+    displayDeathMessage();
+  }
 }
 }
 
@@ -363,13 +430,25 @@ function displayGrid() {
         image(stoneImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Stone ^^
       else if (grid[y][x] === PLAYER){
-        fill("red");
+        imageOrColour = "image";
+        image(playerImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Player ^^
       else if (grid[y][x] === FLOOR_HOLE_TILE){
-        fill("gray");
+        imageOrColour = "image";
+        if (zLevel === 32) {
+          image(surfaceCaveImg, x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+        else {
+          image(undergroundCaveImg, x * cellSize, y * cellSize, cellSize, cellSize);
+        }
       } //Floor Cave ^^
       else if (grid[y][x] === CIELING_HOLE_TILE){
-        fill("silver");
+        imageOrColour = "image";
+        image(gravelImg, x * cellSize, y * cellSize, cellSize, cellSize);
+        noStroke();
+        fill(255,255,255,80);
+        circle(x*cellSize+cellSize/2, y*cellSize+cellSize/2, cellSize/2);
+        stroke(30);
       } //Cieling Cave ^^
       else if (grid[y][x] === TREE){
         imageOrColour = "image";
@@ -383,16 +462,21 @@ function displayGrid() {
         image(plankImg, x * cellSize, y * cellSize, cellSize, cellSize);
       } //Wooden Planks ^^
       else if (grid[y][x] === COAL){
-        fill("black");
+        imageOrColour = "image";
+        image(coalImg, x * cellSize, y * cellSize, cellSize, cellSize);
       }
       else if (grid[y][x] === IRON){
-        fill("white");
+        noStroke()
+        image(ironImg, x * cellSize, y * cellSize, cellSize, cellSize);
+        fill(0,0,0,100);
+        
       }
       else if (grid[y][x] === WORKSHOP){
         fill("brown");
       }
       else if (grid[y][x] === PIG){
-        fill("pink");
+        imageOrColour = "image";
+        image(pigImg, x * cellSize, y * cellSize, cellSize, cellSize);
       }
       else if (grid[y][x] === WOODEN_FLOOR) {
         imageOrColour = "image";
@@ -416,6 +500,7 @@ function displayGrid() {
        //Makes tiles tile-shaped.
         if (imageOrColour === "colour"){
           square(x*cellSize,y*cellSize, cellSize);
+          stroke(30);
         }
        imageOrColour = "colour";
 
@@ -492,14 +577,14 @@ function generateRandomGrid(rows, cols){
           //If on surface, have a one in 75 chance of generating a tree.
           emptyArray[y].push(TREE);
         }
-        else if (oldZ < 20 && random(100) < 10+(20-oldZ)) {
+        else if (oldZ < 25 && random(100) < 10+(20-oldZ)) {
           //If below Z: 20, generate lava. Amount of lava generated depends on how deep you go.
           emptyArray[y].push(LAVA);
         }
         else if (oldZ < 31 && oldZ >= 20 && (random(50)) > 47.5 + (oldZ/15)) {
           emptyArray[y].push(COAL);
         }
-        else if (oldZ < 26 && (random(50)) > 48 + (oldZ/20)) {
+        else if (oldZ < 27 && (random(50)) > 48 + (oldZ/20)) {
           emptyArray[y].push(IRON);
         }
         else {
@@ -540,6 +625,7 @@ function mousePressed(){
             if (grid[y][x] === 1 && inventory.woodenPickaxeCollected>0){
               grid[y].splice(x, 1, 0);
               inventory.stoneCollected++;
+              stoneySFX.play();
             } //If the tile is stone, add one stone to inventory and replace with empty tile ^^.
             else if (grid[y][x] === 9){
               dummy = -dummy;
@@ -553,10 +639,12 @@ function mousePressed(){
             else if (grid[y][x] === TREE){
               grid[y].splice(x, 1, 0);
               inventory.logsCollected++;
+              woodySFX.play();
             }  //If the tile is a tree, add 1 logs/planks to inventory and replace with empty tile.
             else if (grid[y][x] === PLANK){
               grid[y][x] = 0;
               inventory.logsCollected++;
+              woodySFX.play();
              } //If the tile is a log/plank, add 1 log/plank to inventory and replace with empty tile.
              else if (grid[y][x] === WORKSHOP){
               grid[y][x] = 0;
@@ -569,14 +657,17 @@ function mousePressed(){
                   workshopCraft = false;
                 }
               }
+              woodySFX.play();
              } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile.
              else if (grid[y][x] === COAL && inventory.stonePickaxeCollected>0){
               grid[y][x] = 0;
               inventory.coalCollected++;
+              stoneySFX.play();
              } //If the tile is coal, add 1 coal to inventory and replace with empty tile.
              else if (grid[y][x] === IRON && inventory.stonePickaxeCollected>0){
               grid[y][x] = 0;
               inventory.ironOreCollected++;
+              stoneySFX.play();
              } //If the tile is iron ore, add 1 iron ore to inventory and replace with empty tile.
              else if (grid[y][x] === PIG) {
               if (baconFix === true) {
@@ -604,10 +695,12 @@ function mousePressed(){
              else if (grid[y][x] === WOODEN_FLOOR) {
               grid[y][x] = OPEN_TILE;
               inventory.woodenFlooringCollected++;
+              woodySFX.play();
              }
              else if (grid[y][x] === STONE_BRICKS) {
               grid[y][x] = OPEN_TILE;
               inventory.stoneBricksCollected++;
+              stoneySFX.play();
              }
         
              
@@ -617,10 +710,12 @@ function mousePressed(){
                 if (blockSelected === 1 && inventory.stoneCollected>0){
                   grid[y].splice(x, 1, STONE);
                   inventory.stoneCollected--;
+                  stoneySFX.play();
                 } //If the tile is empty and the block selected in the inventory is stone and you have it, replace with stone, -1 stone.
                 if (blockSelected === PLANK && inventory.logsCollected>0){
                   grid[y][x] = PLANK;
                   inventory.logsCollected--;
+                  woodySFX.play();
                 } //If the tile is empty and the block selected in the inventory is logs and you have it, replace with log, -1 log.
                 if (blockSelected === WORKSHOP && inventory.workshopsCollected>0){
                   grid[y][x] = WORKSHOP;
@@ -633,22 +728,27 @@ function mousePressed(){
                   }
 
                   workshops.push(newWorkshop);
+                  woodySFX.play();
                 }
                 if (blockSelected === COAL && inventory.coalCollected>0){
                   grid[y][x] = COAL;
                   inventory.coalCollected--;
+                  stoneySFX.play();
                 } //If this tile is empty and the block selected is coal, replace the empty tile with coal, -1 coal.
                 if (blockSelected === IRON && inventory.ironOreCollected>0){
                   grid[y][x] = IRON;
                   inventory.ironOreCollected--;
+                  stoneySFX.play();
                 } //If this tile is empty and the block selected is iron ore, replace the empty tile with iron ore, -1 iron ore.
                 if (blockSelected === WOODEN_FLOOR && inventory.woodenFlooringCollected>0){
                   grid[y][x] = WOODEN_FLOOR;
                   inventory.woodenFlooringCollected--;
+                  woodySFX.play();
                 } //If this tile is empty and the block selected is wooden flooring, replace the empty tile with flooring, -1 flooring.
                 if (blockSelected === STONE_BRICKS && inventory.stoneBricksCollected>0){
                   grid[y][x] = STONE_BRICKS;
                   inventory.stoneBricksCollected--;
+                  stoneySFX.play();
                 } //If this tile is empty and the block selected is stone bricks, replace the empty tile with stone bricks, -1 stone bricks.
               }
               else {
@@ -731,6 +831,9 @@ function mousePressed(){
     menuState = "open";
   }
   startMenu();
+  if(playerDeathState === true){
+    playerDeathState = false;
+  }
     
 }   
   
@@ -739,27 +842,28 @@ function mousePressed(){
 
 
  function keyPressed(){
+  if (startMenuState === false && playerDeathState === false) {
 
-  if (key === "z"){    //random grid for fun
-    grid = generateRandomGrid(GRID_SIZE, GRID_SIZE);
-  }
+    if (key === "z"){    //random grid for fun
+      grid = generateRandomGrid(GRID_SIZE, GRID_SIZE);
+    }
   
-  if (key === "w") {   //up
-    movePlayer(player.x + 0, player.y - 1); //0 on x axis, -1 on y axis
-  }
+    if (key === "w") {   //up
+      movePlayer(player.x + 0, player.y - 1); //0 on x axis, -1 on y axis
+    }
 
-  if (key === "s") {   //down
-    movePlayer(player.x + 0, player.y + 1); //0 on x axis, 1 on y axis
-  }
+    if (key === "s") {   //down
+      movePlayer(player.x + 0, player.y + 1); //0 on x axis, 1 on y axis
+    }
 
-  if (key === "d") {   //right
-    movePlayer(player.x + 1, player.y + 0); //1 on x axis, 0 on y axis
-  }
+    if (key === "d") {   //right
+      movePlayer(player.x + 1, player.y + 0); //1 on x axis, 0 on y axis
+    }
 
-  if (key === "a") {   //left
-    movePlayer(player.x - 1, player.y + 0); //-1 on x axis, 0 on y axis
+    if (key === "a") {   //left
+      movePlayer(player.x - 1, player.y + 0); //-1 on x axis, 0 on y axis
+    }
   }
-  
 }
 
 
@@ -794,7 +898,24 @@ function movePlayer(x, y) {
           
         }
        
- 
+        if (zLevel === 32) {
+          let choice = random(2);
+          if (choice >= 1){
+            grassWalkSFX1.play();
+          }
+          else {
+            grassWalkSFX2.play();
+          }
+        }
+        else {
+          let choice = random(2);
+          if (choice >= 1){
+            stoneWalkSFX1.play();
+          }
+          else {
+            stoneWalkSFX2.play();
+          }
+        }
         //move the player to the new spot
         grid[player.y][player.x] = PLAYER;
 
@@ -881,9 +1002,61 @@ if (x < GRID_SIZE && y < GRID_SIZE &&
     }
     
   }
-
+  let choice = random(2);
+  if (choice >= 1){
+    woodWalkSFX1.play();
+  }
+  else {
+    woodWalkSFX2.play();
+  }
   //move the player to the new spot
   grid[player.y][player.x] = PLAYER;
+
+
+}
+if (x < GRID_SIZE && y < GRID_SIZE &&
+  x >= 0 && y >= 0 && grid[y][x] === LAVA) {
+  //previous player location
+  let oldX = player.x;
+  let oldY = player.y;
+
+  //move the player
+  player.x = x;
+  player.y = y;
+
+  //reset old location to be the tile it was before
+  if (grid[oldY][oldX] === CIELING_HOLE_TILE){
+    grid[oldY][oldX] = CIELING_HOLE_TILE;
+  }
+  else if (grid[oldY][oldX] === FLOOR_HOLE_TILE){
+    grid[oldY][oldX] = FLOOR_HOLE_TILE;
+  }
+  
+  else {
+    if (tileState === "open tile") {
+      grid[oldY][oldX] = OPEN_TILE;
+    }
+    else {
+      grid[oldY][oldX] = WOODEN_FLOOR;
+      tileState = "open tile";
+    }
+    
+  }
+ 
+  deathSFX.play();
+  
+  //move the player to the new spot
+  
+  console.log(grid);
+  oldGrid[zLevel] = grid;
+  oldZ = 32;
+  zLevel = 32;
+  grid = oldGrid[32];
+  grid[0][0] = PLAYER;
+  player.x = 0;
+  player.y = 0;
+  playerDeathState = true;
+  inventory = emptyInventory;
 
 
 }
@@ -1485,8 +1658,72 @@ function startMenu() {
     mouseY < height/6+100 &&
     mouseY > height/6 && startMenuState === true
   ) {
+    clickSFX.play();
     startMenuState = false; 
     textSize(12);
     ambientBGM.loop();
+    outputVolume(0.5);
+    
+    
   }
+  if (mouseX < width/20+300 &&
+    mouseX > width/20 &&
+    mouseY < height/3+height/12+100 &&
+    mouseY > height/3+height/12 && startMenuState === true
+  ) {
+  clickSFX.play();
+  writer = createWriter("TUTORIAL.txt");
+    writer.write([
+      `HOW TO PLAY:
+      Use the WASD keys to move.
+      To choose a block to place, click on the corresponding box in the inventory.
+      Then to place a block, click on a place on the grid where the white outline shows.
+      Note that you cannot place all items in your inventory. There are seven that you can place:
+
+      - Stone
+      - Wooden Planks
+      - Workshops/Work Stations
+      - Coal
+      - Iron Ore
+      - Wooden flooring
+      - Stone Bricks
+
+      You will also notice a y-level on the side of the building grid. Go to:
+
+      - Y = 31 for coal.
+      - Y = 26 for iron.
+      - Y = 24 for lava.
+
+      Pigs have seven health. Your fist does one damage, a stone sword does five damage, and an iron sword does seven damage.
+
+      You can only mine coal and iron with a stone pickaxe.
+      If you fall in the lava, you die and lose all of your stuff. Be careful!
+      
+      That being said, I hope you enjoy my game.`
+    ]);
+    writer.close();
+  }
+}
+
+function displayZYCoord() {
+  fill("red");
+  textSize(16);
+  text("Y Level: " + zLevel, width/2, 15);
+  textSize(12);
+  fill("black");
+}
+
+function displayDeathMessage() {
+  fill(0, 0, 0, 100);
+  rect(0, 0, width, height);
+  fill("white");
+  rect(width/3, height/3, 300, 100);
+  fill("black");
+  textSize(14);
+  textAlign(CENTER);
+  text(`PLAYER took a hot bath
+(You lost your stuff. Click anywhere to continue.)`, width/3+150, height/3+50);
+  textAlign(LEFT);
+  textSize(12);
+  fill("black");
 }
