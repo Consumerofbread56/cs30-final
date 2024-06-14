@@ -140,7 +140,7 @@ let inventory = {
   stoneSwordCollected: 0,
   stonePickaxeCollected: 0,
   ironPickaxeCollected: 0,
-  ironSwordCollected: 1,
+  ironSwordCollected: 0,
   ironArmorCollected: 0,
   adamantiumPickaxeCollected: 0,
   adamantiumSwordCollected: 0,
@@ -391,7 +391,11 @@ function draw() {
     }
     
   movePigs();
+
   displayZYCoord();
+
+  skinWalkerDestroyer();
+
   if (playerDeathState === true){
     displayDeathMessage();
   }
@@ -638,7 +642,7 @@ function mousePressed(){
             } //If the tile is a cieling hole, do nothing.
             else if (grid[y][x] === TREE){
               grid[y].splice(x, 1, 0);
-              inventory.logsCollected++;
+              inventory.logsCollected += 4;
               woodySFX.play();
             }  //If the tile is a tree, add 1 logs/planks to inventory and replace with empty tile.
             else if (grid[y][x] === PLANK){
@@ -1662,7 +1666,7 @@ function startMenu() {
     startMenuState = false; 
     textSize(12);
     ambientBGM.loop();
-    outputVolume(0.5);
+    outputVolume(0.2);
     
     
   }
@@ -1726,4 +1730,23 @@ function displayDeathMessage() {
   textAlign(LEFT);
   textSize(12);
   fill("black");
+}
+function skinWalkerDestroyer() {
+  let counter = 0;
+  for (let x = 0; x<GRID_SIZE; x++) {
+    for (let y = 0; y<GRID_SIZE; y++) {
+      if (grid[y][x] === PLAYER) {
+        counter++;
+      }
+      if (counter>1){
+        for (let i = 0; i<GRID_SIZE; i++) {
+          for (let j = 0; j<GRID_SIZE; j++) {
+            if (grid[j][i] === PLAYER && player.y !== j && player.x !== i) {
+              grid[j][i] = 0;
+            }
+          }
+        }
+      }
+    }
+  }
 }
