@@ -23,21 +23,21 @@ let zLevel = 32;
 let oldZ = 32;
 //Tracks the state of the crafting menu.
 let craftingState = "None";
-//Facilitates opening and closing UI
+//Facilitates closing and opening the menu.
 let menuState = "open";
-//Facilitates access to advanced crafting recipes when near a workshop, using the locations in workshops[]
+//Facilitates complex crafting when in range of a workshop, held in "workshops[]".
 let workshopCraft = false;
-//Holds the location of the lastSlot in the UI
+//The last slot in the inventory UI.
 let lastSlot;
 //Unused? I'm too afraid to delete it.
 let pigCounter = 0;
-//Controls start menu. if true, start menu is active. If false, game is active
+//Controls if its on the menu screen or in the game
 let startMenuState = true;
-//Either sets the old tile the player moves away from to open or wooden floor depending on the state
-let tileState = "open tile";
-//Displays death message if true
+//Controls the tiles you walk on and if the old tiles transform into open tiles or wooden floors
+let tileState = "open tile"
+//Sets to true if the player JUST fell in lava, displays death message while true.
 let playerDeathState = false;
-//Class variable facilitating the creation of the txt file containing the tutorial.
+//built-in class that facilitates writing a txt file
 let writer;
 
 //Arrays storing coordinates of where cieling holes should be AFTER floor holes are generated on the layer above it.
@@ -62,55 +62,51 @@ let pigs = [];
 //How many tiles across the grid is
 const GRID_SIZE = 30;
 
-//Block IDs
-const PLAYER = 9; //added
-const OPEN_TILE = 0; //added
-const STONE = 1; //added
-const FLOOR_HOLE_TILE = 2; //added
-const CIELING_HOLE_TILE = 3; //added
-const PLANK = 4; //added
-const TREE = 5; //added
-const PIG = 6; //added
+//Rest are block IDs
+const PLAYER = 9;
+const OPEN_TILE = 0;
+const STONE = 1;
+const FLOOR_HOLE_TILE = 2;
+const CIELING_HOLE_TILE = 3;
+const PLANK = 4;
+const TREE = 5;
+const PIG = 6;
 const HELLCRAWLER = 7;
 const GOBLIN = 8;
-const IRON = 10; //added
+const IRON = 10;
 const GOLD = 11;
 const ADAM = 12;
-const COAL = 13; //added
-const WORKSHOP = 14; //added
+const COAL = 13;
+const WORKSHOP = 14;
 const DOOR = 15;
-const LAVA = 16; //added
-const STONE_BRICKS = 18; //added
-const WOODEN_FLOOR = 19; //added
+const LAVA = 16;
+const STONE_BRICKS = 18;
+const WOODEN_FLOOR = 19;
 
-//controls the amount of time in between tree spawning
+//controls how often trees spawn
 const TREE_SR = 30000;
 
-//controls the maximum amount of trees able to spawn
+//controls how many trees can be on the grid (top z level)
 const MAX_TREES = 20;
 
-//controls the amount of time in between pigs spawning
 const PIG_SR = 40000;
-
 const MAX_PIGS = 2; //Note that the const MAX_PIGS signifies the maximum number of pigs to include a 0th pig
 //(uses in for loop where i = 0; i<MAX_PIGS; i++)
-
-//Approximately how long pigs dawdle before moving to a new square
 const PIG_IDLE_TIME = 3000;
 
-//Object variable containing the player location
+//keeps track of player position
 let player = {
   x: 0,
   y: 0,
 };
 
-//Obect variable containing aspects having to do with the millis() built-in.
+//Keeps track of timer-focused variables
 let timePassed  = {
   trees: 0,
-  pigs: 0,
+  pigs: 0
 };
 
-//Object variable containing aspects telling how much you have in your inventory.
+//Gives you the values in your inventory
 let inventory = {
   stoneCollected: 0,
   logsCollected: 10,
@@ -144,7 +140,7 @@ let inventory = {
   woodenFlooringCollected: 0
 };
 
-//A copy of the last variable that your inventory sets its value to in the event of death
+//In the event of death, your current inventory will be set to the same values within this one.
 let emptyInventory = {
   stoneCollected: 0,
   logsCollected: 0,
@@ -178,27 +174,30 @@ let emptyInventory = {
   woodenFlooringCollected: 0
 }
 
-//establishes the class "Pig"
+
 class Pig {
 constructor(x, y, pigNumber) {
-  //location the pig stands on
+  //Location the pig should theoretically be on
   this.oldX = x;
   this.oldY = y;
-  //location the pig wants to move to
+  //Location the pig is heading to next
   this.x = x;
   this.y = y;
-  //I keep this one because it's somehow necissary for the passiveMovement() function. Uses millis.
+  //Not sure why I need this but it breaks without it.
   this.movementSpeed = 0;
-  //More integral to passiveMovement() function. Sets to millis() every time the pig moves, adds the constant PIG_IDLE_TIME to it. Once
-  //millis() exceeds it + the constant, it calls the function move().
+  //Combined in use with millis() and PIG_IDLE_TIME, designates when a pig should move.
   this.pigPassiveMovement = 0;
-  this.panickedMovement = false;
+  //Keeps track of the health of the pig in question.
   this.health = 7;
+  //Keeps track if the pig's health reaches 0 or below. Becomes true if yes.
   this.deathState = false;
+  //Designed to stop the pig from moving when it reaches zero health before it dies.
   this.moveState = true;
+  //The pig's ID that it keeps track of with the popGood() function that Hanson made (special thanks to him)
   this.pigNumber = pigNumber;
 }
 move() {
+  //random movement if not dead
   if(this.moveState = true) {
     let choice = random(100);
     if (choice > 75 && this.x<GRID_SIZE) {
@@ -218,6 +217,9 @@ move() {
 }
 
 passiveMovement() {
+  //Makes a timer. When the timer goes off, make the pig move and move the time it takes to make a new one to
+  //the current time + the constant PIG_IDLE_TIME with 0.1 seconds extra give or take. Then when the timer
+  //catches up, repeat the first step.
   if (millis() > this.pigPassiveMovement) {
     if (millis() > this.movementSpeed) {
       this.move();
@@ -227,24 +229,29 @@ passiveMovement() {
 
   }
 }
+//Runs through before every time the pig must move, but only activates if the health of the pig drops below
+//0 HP.
 die() {
   if (this.deathState === true && (this === pigs[this.pigNumber])) {
+    //Sets the tile the pig was occupying to an open tile.
     grid[this.y][this.x] = 0;
+    //Makes it so it can't move come the iteration of the next function
     this.moveState = false;
+    //Checks if this is the correct pig to pop from the array as a safety measure, since it checks multiple
+    //times per second whether to make pigs die or not.
     if (pigs[this.pigNumber].pigNumber === this.pigNumber){
-     
-      pigs = this.popGood(this.pigNumber, pigs);
-     
+      //If so, creates a new array where the shuffle their ID. The pig slated for death loses its spot in the new
+      //array and the other pigs go down a position, allowing a new pig to spawn. Then replaces the old array with the
+      //new one.
+      pigs = this.popGood(this.pigNumber, pigs)
     }
-    
   }
 }
-
+//See above exxplanation.
 popGood(numberToPop, array){
   let arrayFinal = [];
   for (let i = 0; i < array.length; i++){
     if (i !== numberToPop){
-      print(array)
       arrayFinal.push(array[i])
     }
   }
@@ -253,7 +260,7 @@ popGood(numberToPop, array){
 
 }
 
-
+//Establishes all game sprites and sound effects used as variables.
 let grassImg;
 let treeImg;
 let plankImg;
@@ -309,7 +316,7 @@ function preload(){
   stoneySFX = loadSound("stoneySFX.mp3");
   clickSFX = loadSound("minecraft_click.mp3");
   deathSFX = loadSound("fireHurtSFX.mp3");
-}
+} //Defines the variables as the image/sound they're supposed to represent.
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -321,8 +328,11 @@ function setup() {
 
 function draw() {
   if (startMenuState === true) {
+    //draws the background
     minecraftBackground();
+    //draws start button
     displayStartButton();
+    //draws tutorial button
     displayTutorialButton();
   }
   else {
@@ -342,7 +352,6 @@ function draw() {
   //Spawns pigs.
   spawnPigs();
   
-  //moves pigs.
     for (let i = 0; i<pigs.length; i++){
       pigs[i].die();
       if (pigs[i] != undefined){
@@ -352,14 +361,17 @@ function draw() {
     for (let i = 0; i < pigs.length; i++){
       pigs[i].pigNumber = i;
     }
-    
+  
+  //moves the ID point of the pigs on the grid.
   movePigs();
-
+  //Displays the y coordinate (according to the player), otherwise known as the z coordinate (in the code)
   displayZYCoord();
-
+  //If the bug happens where there are somehow more than one player tiles on the grid, destroys the
+  //"skinwalker" tile: the one not associated with the player object variable.
   skinWalkerDestroyer();
 
   if (playerDeathState === true){
+    //Displays the death message after you fall in lava.
     displayDeathMessage();
   }
 }
@@ -368,6 +380,7 @@ function draw() {
 
 function displayGrid() {
 
+  //Establishes variables later used to draw the block highlights.
   let bottomLeftCorner = {
     x: 0,
     y: 0
@@ -420,10 +433,10 @@ function displayGrid() {
       else if (grid[y][x] === TREE){
         imageOrColour = "image";
         image(treeImg, x * cellSize, y * cellSize, cellSize, cellSize);
-      }
+      } //Tree^^
       else if (grid[y][x] === LAVA){
         fill("maroon");
-      }
+      } //Lava^^
       else if (grid[y][x] === PLANK){
         imageOrColour = "image";
         image(plankImg, x * cellSize, y * cellSize, cellSize, cellSize);
@@ -431,28 +444,28 @@ function displayGrid() {
       else if (grid[y][x] === COAL){
         imageOrColour = "image";
         image(coalImg, x * cellSize, y * cellSize, cellSize, cellSize);
-      }
+      } //Coal ^^
       else if (grid[y][x] === IRON){
         noStroke()
         image(ironImg, x * cellSize, y * cellSize, cellSize, cellSize);
         fill(0,0,0,100);
         
-      }
+      } //Iron ^^ (shaded to fit with stone texture)
       else if (grid[y][x] === WORKSHOP){
         fill("brown");
       }
       else if (grid[y][x] === PIG){
         imageOrColour = "image";
         image(pigImg, x * cellSize, y * cellSize, cellSize, cellSize);
-      }
+      } //Pig ^^
       else if (grid[y][x] === WOODEN_FLOOR) {
         imageOrColour = "image";
         image(woodenFloorImg, x * cellSize, y * cellSize, cellSize, cellSize);
-      }
+      } //Wooden Floor ^^
       else if (grid[y][x] === STONE_BRICKS) {
         imageOrColour = "image";
         image(stoneBrickImg, x * cellSize, y * cellSize, cellSize, cellSize);
-      }
+      } //Stone bricks^^
       else {
         //Open spaces are green on zLevel 32 and white on any zLevel below.
         if (oldZ === 32){
@@ -469,9 +482,11 @@ function displayGrid() {
           square(x*cellSize,y*cellSize, cellSize);
           stroke(30);
         }
+        //Resets imageOrColour to the default of colouring a block instead of replacing it with an
+        //image.
        imageOrColour = "colour";
 
-       //creates outline on block if the mouse goes over it.
+       //Creates outline on block if the mouse goes over it.
       
        if (mouseX > x*cellSize &&
           mouseX < x*cellSize + cellSize &&
@@ -504,6 +519,8 @@ function displayGrid() {
       
     }
   }
+  //Outlines a block. Has to be at the end of the function to make it show properly. Although in hindsight,
+  //I could've just made a square instead of using all of these aspects in the object variable.
   stroke("white");
   line(topLeftCorner.x, topLeftCorner.y, topRightCorner.x, topRightCorner.y);
   line(topLeftCorner.x, topLeftCorner.y, bottomLeftCorner.x, bottomLeftCorner.y);
@@ -545,13 +562,15 @@ function generateRandomGrid(rows, cols){
           emptyArray[y].push(TREE);
         }
         else if (oldZ < 25 && random(100) < 10+(20-oldZ)) {
-          //If below Z: 20, generate lava. Amount of lava generated depends on how deep you go.
+          //If below Z: 25, generate lava. Amount of lava generated depends on how deep you go.
           emptyArray[y].push(LAVA);
         }
         else if (oldZ < 31 && oldZ >= 20 && (random(50)) > 47.5 + (oldZ/15)) {
+          //If below Z: 31, generate coal and more the further down you go
           emptyArray[y].push(COAL);
-        }
+        } 
         else if (oldZ < 27 && (random(50)) > 48 + (oldZ/20)) {
+          //If below Z: 27, generate iron and more the further you descend.
           emptyArray[y].push(IRON);
         }
         else {
@@ -625,7 +644,9 @@ function mousePressed(){
                 }
               }
               woodySFX.play();
-             } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile.
+             } //If the tile is a workshop, add 1 workshop to inventory and replace with empty tile. Also
+             //remove the workshop that you deleted from the array and set your crafting ability to basic
+             //to properly facilitate the block update.
              else if (grid[y][x] === COAL && inventory.stonePickaxeCollected>0){
               grid[y][x] = 0;
               inventory.coalCollected++;
@@ -662,12 +683,12 @@ function mousePressed(){
               grid[y][x] = OPEN_TILE;
               inventory.woodenFlooringCollected++;
               woodySFX.play();
-             }
+             } //If destroy wooden floor, then collect and replace with open tile
              else if (grid[y][x] === STONE_BRICKS) {
               grid[y][x] = OPEN_TILE;
               inventory.stoneBricksCollected++;
               stoneySFX.play();
-             }
+             } //If destroy stone bricks, then collect and replace with open tile
         
              
             
@@ -695,7 +716,9 @@ function mousePressed(){
 
                   workshops.push(newWorkshop);
                   woodySFX.play();
-                }
+                } //If the tile is empty and blockSelected = workshop and you have it in inventory, push a
+                //new workshop to the array and record its location. Replace the open tile with a workshop and
+                //subtract one workshop from the Player's inventory.
                 if (blockSelected === COAL && inventory.coalCollected>0){
                   grid[y][x] = COAL;
                   inventory.coalCollected--;
@@ -761,6 +784,7 @@ function mousePressed(){
               craftingState = "Stone Sword";
             }
             else if (slot === 6){
+              //etc. No need to be redundant.
               blockSelected = COAL;
             }
             else if (slot === 7){
@@ -797,6 +821,8 @@ function mousePressed(){
     menuState = "open";
   }
   startMenu();
+
+  //If screen clicked during the deathstate, return to regular gamestate.
   if(playerDeathState === true){
     playerDeathState = false;
   }
@@ -1013,7 +1039,7 @@ if (x < GRID_SIZE && y < GRID_SIZE &&
   
   //move the player to the new spot
   
-  console.log(grid);
+  //Death sequence: resets player location to oldGrid[32][0][0] and deletes inventory
   oldGrid[zLevel] = grid;
   oldZ = 32;
   zLevel = 32;
@@ -1137,6 +1163,7 @@ if (x < GRID_SIZE && y < GRID_SIZE &&
  }
 
  function displayCraftingMenu(){
+  //Checks the 
   if (menuState === "open"){
   if (craftingState != "None"){
     stroke(30);
