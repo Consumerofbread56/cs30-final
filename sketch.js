@@ -1163,7 +1163,7 @@ if (x < GRID_SIZE && y < GRID_SIZE &&
  }
 
  function displayCraftingMenu(){
-  //Checks the 
+  //Checks the crafting state
   if (menuState === "open"){
   if (craftingState != "None"){
     stroke(30);
